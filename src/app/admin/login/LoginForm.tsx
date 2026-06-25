@@ -10,6 +10,24 @@ export function LoginForm() {
     <form action={formAction} className="space-y-4">
       <div>
         <label
+          htmlFor="username"
+          className="mb-1.5 block text-sm font-medium text-ink-soft"
+        >
+          Username
+        </label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          required
+          autoFocus
+          autoComplete="username"
+          placeholder="Ferdinand23"
+          className="w-full rounded-[var(--radius)] border border-line bg-surface px-4 py-2.5 text-ink outline-none transition-colors hover:border-forest/30 focus-visible:border-forest"
+        />
+      </div>
+      <div>
+        <label
           htmlFor="password"
           className="mb-1.5 block text-sm font-medium text-ink-soft"
         >

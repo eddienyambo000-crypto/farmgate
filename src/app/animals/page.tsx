@@ -59,7 +59,7 @@ export default async function AnimalsPage({
           </h1>
           <p className="mt-3 max-w-2xl text-ink-soft">
             Every animal below is listed by a verified keeper. Found one you
-            like? Request it through FarmGate — we handle the rest.
+            like? Request it through Farmgate — we handle the rest.
           </p>
         </div>
       </header>

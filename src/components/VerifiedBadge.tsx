@@ -12,7 +12,7 @@ export function VerifiedBadge({
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full bg-gold-tint px-2 py-0.5 font-semibold text-gold-deep ${text}`}
-      title="Verified keeper — identity and animals confirmed by FarmGate"
+      title="Verified keeper — identity and animals confirmed by Farmgate"
     >
       <ShieldCheckIcon className={icon} />
       {label && "Verified"}

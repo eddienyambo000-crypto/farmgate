@@ -2,7 +2,7 @@
  * Domain types.
  *
  * The split between `PublicSeller` and `SellerContact` is deliberate and is the
- * core of FarmGate's business model. Public-facing code (everything a buyer can
+ * core of Farmgate's business model. Public-facing code (everything a buyer can
  * reach) may only ever touch `PublicSeller` / `PublicListing` — these types do
  * not even contain a phone or email field, so seller contacts cannot leak by
  * accident. Contact details live in `SellerContact` and are only readable by

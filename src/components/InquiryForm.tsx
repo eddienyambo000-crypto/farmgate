@@ -48,7 +48,7 @@ export function InquiryForm({
           Request received
         </h3>
         <p className="mt-2 text-sm text-ink-soft">
-          The FarmGate team has your request for <strong>{listingTitle}</strong>.
+          The Farmgate team has your request for <strong>{listingTitle}</strong>.
           We&apos;ll contact you shortly to confirm availability and arrange a
           viewing. Keep your phone close.
         </p>
@@ -61,7 +61,7 @@ export function InquiryForm({
       <div className="flex items-start gap-2 rounded-[var(--radius)] bg-leaf-tint/40 p-3 text-sm text-forest-deep">
         <ShieldCheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-gold-deep" />
         <p>
-          FarmGate handles this deal directly. Send your request and our team
+          Farmgate handles this deal directly. Send your request and our team
           contacts you — your details stay private.
         </p>
       </div>

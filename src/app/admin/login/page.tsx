@@ -15,7 +15,7 @@ export default async function AdminLoginPage() {
     <div className="grid min-h-[70vh] place-items-center bg-grain px-4 py-16">
       <div className="w-full max-w-sm rounded-[var(--radius-xl)] border border-line bg-surface p-8 shadow-[var(--shadow-lg)]">
         <p className="font-display text-2xl font-extrabold text-forest-deep">
-          FarmGate Admin
+          Farmgate Admin
         </p>
         <p className="mt-1 text-sm text-ink-muted">
           Sign in to manage leads and listings.

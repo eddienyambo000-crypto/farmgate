@@ -4,7 +4,7 @@ import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How FarmGate collects, uses and protects your information.",
+  description: "How Farmgate collects, uses and protects your information.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -12,9 +12,9 @@ export default function PrivacyPage() {
   return (
     <LegalLayout title="Privacy Policy" updated="June 2026">
       <p>
-        FarmGate (&quot;we&quot;, &quot;us&quot;) operates Rwanda&apos;s livestock
+        Farmgate (&quot;we&quot;, &quot;us&quot;) operates Rwanda&apos;s livestock
         marketplace. This policy explains what information we collect and how we
-        use it. By using FarmGate you agree to this policy.
+        use it. By using Farmgate you agree to this policy.
       </p>
 
       <h2>Information we collect</h2>
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
       <h2>Protecting contacts</h2>
       <p>
         We do not publish individual buyer or seller contact details on the site.
-        Requests are handled by the FarmGate team. We never sell your personal
+        Requests are handled by the Farmgate team. We never sell your personal
         information to third parties.
       </p>
 

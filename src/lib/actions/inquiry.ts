@@ -2,7 +2,9 @@
 
 import { randomUUID } from "crypto";
 import { getListingBySlug } from "@/lib/data/listings";
-import { addInquiry } from "@/lib/data/inquiries-store";
+import { addInquiry } from "@/lib/data/admin-repo";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createSupabasePublicClient } from "@/lib/supabase/public";
 import type { InquiryInput } from "@/lib/types";
 
 export interface InquiryResult {
@@ -46,20 +48,32 @@ export async function submitInquiry(
   if (!listing)
     return { ok: false, error: "That animal is no longer available." };
 
-  addInquiry({
-    id: randomUUID(),
-    listingId: listing.id,
-    listingTitle: listing.title,
-    buyerName: name,
-    buyerPhone: phone,
-    buyerDistrict: district,
-    message,
-    status: "new",
-    createdAt: new Date().toISOString(),
-  });
-
-  // TODO (Supabase): insert into `inquiries` and notify the FarmGate team
-  // (WhatsApp/email) so a human routes the deal between buyer and keeper.
+  if (isSupabaseConfigured()) {
+    // Insert via the anon client — RLS allows INSERT only (never SELECT), so a
+    // buyer can submit a lead but can never read others' leads or seller data.
+    const supabase = createSupabasePublicClient();
+    const { error } = await supabase.from("fg_inquiries").insert({
+      listing_id: listing.id,
+      listing_title: listing.title,
+      buyer_name: name,
+      buyer_phone: phone,
+      buyer_district: district,
+      message,
+    });
+    if (error) return { ok: false, error: "Could not send your request. Please try again." };
+  } else {
+    addInquiry({
+      id: randomUUID(),
+      listingId: listing.id,
+      listingTitle: listing.title,
+      buyerName: name,
+      buyerPhone: phone,
+      buyerDistrict: district,
+      message,
+      status: "new",
+      createdAt: new Date().toISOString(),
+    });
+  }
 
   return { ok: true };
 }

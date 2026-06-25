@@ -15,7 +15,7 @@ export const SELLERS: Record<string, PublicSeller> = {
     sector: "Nyamata",
     verified: true,
     memberSince: "2024-01",
-    bio: "Livestock keeper with 10+ years raising dairy cattle, goats and pigs. Founder of FarmGate. Every animal is farm-raised and health-checked before listing.",
+    bio: "Livestock keeper with 10+ years raising dairy cattle, goats and pigs. Founder of Farmgate. Every animal is farm-raised and health-checked before listing.",
     photoUrl: null,
     totalListings: 6,
   },

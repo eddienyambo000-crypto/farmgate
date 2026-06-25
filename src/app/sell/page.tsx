@@ -10,7 +10,7 @@ import {
 export const metadata: Metadata = {
   title: "Sell Your Animals on Rwanda's Livestock Marketplace",
   description:
-    "List your cattle, goats, pigs, chickens or rabbits on FarmGate and reach serious buyers across Rwanda. Free to apply, verified keeper badge, we handle every enquiry.",
+    "List your cattle, goats, pigs, chickens or rabbits on Farmgate and reach serious buyers across Rwanda. Free to apply, verified keeper badge, we handle every enquiry.",
   alternates: { canonical: "/sell" },
 };
 
@@ -27,7 +27,7 @@ export default function SellPage() {
               Sell your animals to buyers across Rwanda.
             </h1>
             <p className="mt-5 max-w-lg text-lg text-ink-soft">
-              FarmGate puts your animals in front of serious buyers and handles
+              Farmgate puts your animals in front of serious buyers and handles
               every enquiry for you. No brokers eating your margin, no time wasted
               with people who never show up.
             </p>
@@ -47,7 +47,7 @@ export default function SellPage() {
                 {
                   icon: HandshakeIcon,
                   title: "We bring you serious buyers",
-                  body: "FarmGate screens every enquiry and connects you only with ready buyers.",
+                  body: "Farmgate screens every enquiry and connects you only with ready buyers.",
                 },
               ].map((b) => (
                 <li
@@ -93,7 +93,7 @@ export default function SellPage() {
             ["01", "Apply", "Send your details and what you keep. Takes 2 minutes."],
             ["02", "Get verified", "We confirm your identity and check your animals are real and healthy."],
             ["03", "Go live", "We photograph and publish your listings with a verified badge."],
-            ["04", "We send buyers", "FarmGate routes serious buyers to you and helps close the deal."],
+            ["04", "We send buyers", "Farmgate routes serious buyers to you and helps close the deal."],
           ].map(([n, title, body]) => (
             <div
               key={n}

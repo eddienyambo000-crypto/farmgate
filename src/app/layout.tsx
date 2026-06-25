@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SITE } from "@/lib/site";
+import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
+import { DockNav } from "@/components/DockNav";
+import { SmoothScroll } from "@/components/motion/SmoothScroll";
+import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -32,7 +38,7 @@ export const metadata: Metadata = {
     "cattle for sale Rwanda",
     "goats for sale Kigali",
     "animal marketplace Rwanda",
-    "FarmGate Rwanda",
+    "Farmgate Rwanda",
     "buy cattle Rwanda",
     "livestock Bugesera",
   ],
@@ -63,28 +69,17 @@ export default function RootLayout({
       className={`${bricolage.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: SITE.name,
-              url: SITE.url,
-              description: SITE.description,
-              areaServed: { "@type": "Country", name: "Rwanda" },
-              address: {
-                "@type": "PostalAddress",
-                addressRegion: "Eastern Province",
-                addressCountry: "RW",
-              },
-            }),
-          }}
-        />
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <WhatsAppFab />
+        <OrganizationJsonLd />
+        <LanguageProvider>
+          <SmoothScroll />
+          <Navbar />
+          <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+          <Footer />
+          <WhatsAppFab />
+          <DockNav />
+        </LanguageProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

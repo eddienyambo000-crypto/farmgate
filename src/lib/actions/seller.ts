@@ -1,7 +1,9 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { addApplication } from "@/lib/data/applications-store";
+import { addApplication } from "@/lib/data/admin-repo";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { ANIMAL_TYPES } from "@/lib/types";
 
 export interface SellerInput {
@@ -44,19 +46,29 @@ export async function submitSellerApplication(
   if (!ANIMAL_TYPES.includes(input.animalType as (typeof ANIMAL_TYPES)[number]))
     return { ok: false, error: "Please choose what animals you keep." };
 
-  addApplication({
-    id: randomUUID(),
-    fullName,
-    phone,
-    district,
-    animalType: input.animalType,
-    animalCount,
-    details,
-    createdAt: new Date().toISOString(),
-  });
-
-  // TODO (Supabase): insert into `seller_applications` and notify the team to
-  // verify the keeper and publish their listings.
+  if (isSupabaseConfigured()) {
+    const supabase = createSupabasePublicClient();
+    const { error } = await supabase.from("fg_seller_applications").insert({
+      full_name: fullName,
+      phone,
+      district,
+      animal_type: input.animalType,
+      animal_count: animalCount,
+      details,
+    });
+    if (error) return { ok: false, error: "Could not submit. Please try again." };
+  } else {
+    addApplication({
+      id: randomUUID(),
+      fullName,
+      phone,
+      district,
+      animalType: input.animalType,
+      animalCount,
+      details,
+      createdAt: new Date().toISOString(),
+    });
+  }
 
   return { ok: true };
 }

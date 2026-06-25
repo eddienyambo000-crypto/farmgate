@@ -10,7 +10,7 @@ export function Footer() {
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
         <div>
           <p className="font-display text-2xl font-extrabold text-white">
-            FarmGate
+            Farmgate <span className="text-gold">Rwanda</span>
           </p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-cream/70">
             Rwanda&apos;s livestock marketplace. Buy and sell healthy animals
@@ -42,7 +42,7 @@ export function Footer() {
 
         <nav aria-label="Company">
           <p className="text-xs font-semibold uppercase tracking-wider text-gold">
-            FarmGate
+            Farmgate
           </p>
           <ul className="mt-4 space-y-2.5 text-sm">
             <li>
@@ -73,7 +73,7 @@ export function Footer() {
             Get in touch
           </p>
           <p className="mt-4 text-sm text-cream/70">
-            Questions about buying or listing an animal? Message the FarmGate
+            Questions about buying or listing an animal? Message the Farmgate
             team — we handle every enquiry directly.
           </p>
           <a

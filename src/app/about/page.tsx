@@ -5,9 +5,9 @@ import { ArrowRightIcon } from "@/components/icons";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About FarmGate",
+  title: "About Farmgate",
   description:
-    "FarmGate is Rwanda's livestock marketplace, connecting animal keepers directly with buyers — cutting out the middlemen who inflate prices on both sides.",
+    "Farmgate is Rwanda's livestock marketplace, connecting animal keepers directly with buyers — cutting out the middlemen who inflate prices on both sides.",
   alternates: { canonical: "/about" },
 };
 
@@ -24,7 +24,7 @@ export default function AboutPage() {
               Built by a keeper, for keepers and buyers.
             </h1>
             <p className="mt-5 text-lg text-ink-soft">
-              FarmGate started on a farm in Bugesera. After years of watching
+              Farmgate started on a farm in Bugesera. After years of watching
               brokers inflate prices 20–40% on both sides, we built the direct
               marketplace Rwanda&apos;s livestock trade was missing.
             </p>
@@ -53,7 +53,7 @@ export default function AboutPage() {
             arrived with cash in hand.
           </p>
           <p className="mt-4 text-ink-soft">
-            FarmGate changes that. Every animal is listed by a verified keeper
+            Farmgate changes that. Every animal is listed by a verified keeper
             with real photos, an honest price and health records. Buyers request
             through the platform, and our team makes sure every deal is safe and
             fair — for both sides.

@@ -23,6 +23,8 @@ import {
   ArrowRightIcon,
 } from "@/components/icons";
 
+export const revalidate = 60;
+
 export async function generateStaticParams() {
   const slugs = await getAllSlugs();
   return slugs.map((slug) => ({ slug }));
@@ -241,7 +243,7 @@ export default async function ListingPage({
               Interested in this animal?
             </h2>
             <p className="mb-4 mt-1 text-sm text-ink-soft">
-              Send a request and FarmGate will get back to you.
+              Send a request and Farmgate will get back to you.
             </p>
 
             <InquiryForm

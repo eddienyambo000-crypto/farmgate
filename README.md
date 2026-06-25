@@ -1,9 +1,9 @@
-# FarmGate RW — Rwanda's Livestock Marketplace
+# Farmgate RW — Rwanda's Livestock Marketplace
 
 A production-grade marketplace connecting verified animal keepers with buyers
 across Rwanda. Buyers browse cattle, goats, pigs, chickens, sheep and rabbits,
 then request an animal **through the platform** — seller contact details are
-never exposed. FarmGate owns every buyer↔seller connection, which is the core of
+never exposed. Farmgate owns every buyer↔seller connection, which is the core of
 the business model.
 
 ## Tech stack
@@ -27,7 +27,7 @@ details.** It is enforced in two independent layers so it can't leak by accident
    [`supabase/schema.sql`](supabase/schema.sql).
 
 Every buyer interest becomes a row in `inquiries` (anon can INSERT, never
-SELECT). The FarmGate team routes the deal from the admin dashboard.
+SELECT). The Farmgate team routes the deal from the admin dashboard.
 
 ## Getting started
 

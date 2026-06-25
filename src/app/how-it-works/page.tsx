@@ -12,7 +12,7 @@ import {
 export const metadata: Metadata = {
   title: "How It Works",
   description:
-    "How FarmGate works for buyers and sellers — browse verified animals, request through the platform, and let FarmGate handle the deal safely.",
+    "How Farmgate works for buyers and sellers — browse verified animals, request through the platform, and let Farmgate handle the deal safely.",
   alternates: { canonical: "/how-it-works" },
 };
 
@@ -25,7 +25,7 @@ export default function HowItWorksPage() {
             A safer way to buy and sell animals in Rwanda
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-soft">
-            FarmGate sits between buyers and keepers so every deal is fair,
+            Farmgate sits between buyers and keepers so every deal is fair,
             verified and handled properly — no middlemen, no guesswork.
           </p>
         </div>
@@ -52,14 +52,14 @@ export default function HowItWorksPage() {
             {
               icon: ShieldCheckIcon,
               n: "02",
-              title: "Request through FarmGate",
+              title: "Request through Farmgate",
               body: "Found one you like? Send a request. We capture it and our team contacts you — you never chase a stranger's phone number or risk a scam.",
             },
             {
               icon: HandshakeIcon,
               n: "03",
               title: "We arrange everything",
-              body: "FarmGate coordinates the viewing, confirms the animal's health, and helps arrange safe pickup or delivery. You pay only when you're happy.",
+              body: "Farmgate coordinates the viewing, confirms the animal's health, and helps arrange safe pickup or delivery. You pay only when you're happy.",
             },
           ].map((s) => (
             <div
@@ -92,7 +92,7 @@ export default function HowItWorksPage() {
               Why we keep contacts private
             </h2>
             <p className="mt-4 text-lg text-cream/80">
-              On FarmGate you don&apos;t see a seller&apos;s phone number, and they
+              On Farmgate you don&apos;t see a seller&apos;s phone number, and they
               don&apos;t see yours. Every conversation runs through our team.
             </p>
           </div>
@@ -100,7 +100,7 @@ export default function HowItWorksPage() {
             {[
               "No scams — we verify both sides before anyone commits.",
               "No price games — keepers can't be undercut by brokers, buyers can't be overcharged.",
-              "Real support — if anything goes wrong, FarmGate is accountable, not a stranger.",
+              "Real support — if anything goes wrong, Farmgate is accountable, not a stranger.",
               "Fair for everyone — the keeper keeps their margin, the buyer gets a fair price.",
             ].map((point) => (
               <li
@@ -168,7 +168,7 @@ export default function HowItWorksPage() {
             Pickup &amp; delivery, sorted
           </h2>
           <p className="max-w-xl text-ink-soft">
-            Buying from another district? FarmGate helps arrange safe, affordable
+            Buying from another district? Farmgate helps arrange safe, affordable
             transport of your animal anywhere in Rwanda — just ask when you make
             your request.
           </p>

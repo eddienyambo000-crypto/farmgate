@@ -4,7 +4,7 @@ import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
-  description: "The terms that govern your use of the FarmGate marketplace.",
+  description: "The terms that govern your use of the Farmgate marketplace.",
   alternates: { canonical: "/terms" },
 };
 
@@ -12,13 +12,13 @@ export default function TermsPage() {
   return (
     <LegalLayout title="Terms & Conditions" updated="June 2026">
       <p>
-        These terms govern your use of FarmGate. By using the marketplace, you
+        These terms govern your use of Farmgate. By using the marketplace, you
         agree to them.
       </p>
 
       <h2>The marketplace</h2>
       <p>
-        FarmGate connects animal keepers with buyers in Rwanda. We facilitate
+        Farmgate connects animal keepers with buyers in Rwanda. We facilitate
         introductions and help coordinate transactions, but the sale agreement is
         between the buyer and the keeper.
       </p>
@@ -30,14 +30,14 @@ export default function TermsPage() {
           Listing information (breed, age, health, price) must be accurate and
           honest.
         </li>
-        <li>FarmGate may verify, edit or remove any listing.</li>
+        <li>Farmgate may verify, edit or remove any listing.</li>
       </ul>
 
       <h2>Buyer responsibilities</h2>
       <ul>
         <li>Submit genuine requests through the platform only.</li>
         <li>
-          Inspect the animal, or have FarmGate confirm its condition, before
+          Inspect the animal, or have Farmgate confirm its condition, before
           completing payment.
         </li>
       </ul>
@@ -45,13 +45,13 @@ export default function TermsPage() {
       <h2>Animal health & welfare</h2>
       <p>
         All animals must be treated and transported humanely in line with Rwandan
-        law. FarmGate does not permit the sale of stolen, diseased or
+        law. Farmgate does not permit the sale of stolen, diseased or
         unlawfully-traded animals.
       </p>
 
       <h2>Liability</h2>
       <p>
-        FarmGate works to verify keepers and listings but does not guarantee any
+        Farmgate works to verify keepers and listings but does not guarantee any
         transaction. We are not liable for losses arising from dealings between
         buyers and keepers, to the extent permitted by law.
       </p>

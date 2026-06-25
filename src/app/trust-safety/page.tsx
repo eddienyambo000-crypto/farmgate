@@ -12,7 +12,7 @@ import {
 export const metadata: Metadata = {
   title: "Trust & Safety",
   description:
-    "How FarmGate keeps buyers and keepers safe — verified keepers, private contacts, health records and protected deals.",
+    "How Farmgate keeps buyers and keepers safe — verified keepers, private contacts, health records and protected deals.",
   alternates: { canonical: "/trust-safety" },
 };
 
@@ -20,12 +20,12 @@ const PILLARS = [
   {
     icon: ShieldCheckIcon,
     title: "Verified keepers only",
-    body: "Every seller's identity is checked and their animals confirmed before a single listing goes live. The verified badge means FarmGate vouches for them.",
+    body: "Every seller's identity is checked and their animals confirmed before a single listing goes live. The verified badge means Farmgate vouches for them.",
   },
   {
     icon: LockIcon,
     title: "Private contacts",
-    body: "Buyers never see a keeper's phone number and keepers never see a buyer's. Every conversation runs through FarmGate, so nobody can be scammed or undercut.",
+    body: "Buyers never see a keeper's phone number and keepers never see a buyer's. Every conversation runs through Farmgate, so nobody can be scammed or undercut.",
   },
   {
     icon: SyringeIcon,
@@ -35,7 +35,7 @@ const PILLARS = [
   {
     icon: HandshakeIcon,
     title: "Protected deals",
-    body: "FarmGate coordinates the viewing and confirms the animal before money changes hands. If something isn't as described, you don't have to proceed.",
+    body: "Farmgate coordinates the viewing and confirms the animal before money changes hands. If something isn't as described, you don't have to proceed.",
   },
   {
     icon: TruckIcon,
@@ -56,7 +56,7 @@ export default function TrustSafetyPage() {
             Your safety is the whole point
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-soft">
-            Livestock is a serious purchase. FarmGate is built so buyers and
+            Livestock is a serious purchase. Farmgate is built so buyers and
             keepers can trade with total confidence.
           </p>
         </div>
@@ -86,10 +86,10 @@ export default function TrustSafetyPage() {
           </h2>
           <ul className="mt-4 space-y-3 text-ink-soft">
             {[
-              "Always request the animal through FarmGate — never send money to anyone claiming to be a seller off-platform.",
-              "Ask to view the animal, or have FarmGate confirm its condition, before you pay.",
+              "Always request the animal through Farmgate — never send money to anyone claiming to be a seller off-platform.",
+              "Ask to view the animal, or have Farmgate confirm its condition, before you pay.",
               "Confirm vaccination and health details with our team.",
-              "Use FarmGate's arranged transport for deliveries between districts.",
+              "Use Farmgate's arranged transport for deliveries between districts.",
             ].map((tip) => (
               <li key={tip} className="flex items-start gap-2">
                 <ShieldCheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-forest" />

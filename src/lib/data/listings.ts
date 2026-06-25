@@ -1,16 +1,15 @@
 import "server-only";
-import { LISTINGS } from "./seed";
+import { db, join } from "./store";
 import { CATEGORY_LIST } from "../categories";
+import { isSupabaseConfigured } from "../supabase/config";
+import { createSupabasePublicClient } from "../supabase/public";
+import { mapListing } from "./map";
 import type { AnimalType, PublicListing } from "../types";
 
 /**
- * Data-access layer. Today it is backed by the seed data; when Supabase env vars
- * are configured this is the single place to swap in queries against the
- * RLS-protected `public_listings` view. Every function is async so callers don't
- * change when the backend lands.
- *
- * Marked `server-only`: this module reaches the database and must never end up in
- * a client bundle.
+ * Public read layer. Reads from the RLS-protected `fg_public_listings` view when
+ * Supabase is configured, otherwise from the in-memory seed store (local dev).
+ * Only `active`/`sold` listings are ever returned (enforced by the view + store).
  */
 
 export interface ListingFilters {
@@ -21,87 +20,135 @@ export interface ListingFilters {
   sort?: "newest" | "price-asc" | "price-desc";
 }
 
-function activeListings(): PublicListing[] {
-  return LISTINGS.filter((l) => l.status === "active" || l.status === "sold");
+const sb = () => isSupabaseConfigured();
+
+// ---------------- seed-store helpers ----------------
+function storeListings(): PublicListing[] {
+  return db()
+    .listings.filter((l) => l.status === "active" || l.status === "sold")
+    .map(join)
+    .filter((l): l is PublicListing => l !== null);
 }
 
+function sortRows(rows: PublicListing[], sort?: ListingFilters["sort"]) {
+  const s =
+    sort === "price-asc"
+      ? [...rows].sort((a, b) => a.priceRwf - b.priceRwf)
+      : sort === "price-desc"
+        ? [...rows].sort((a, b) => b.priceRwf - a.priceRwf)
+        : [...rows].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+  return [...s].sort((a, b) => Number(b.featured) - Number(a.featured));
+}
+
+// ---------------- public API ----------------
 export async function getListings(
   filters: ListingFilters = {},
 ): Promise<PublicListing[]> {
-  let rows = activeListings();
+  if (sb()) {
+    const c = createSupabasePublicClient();
+    let q = c.from("fg_public_listings").select("*");
+    if (filters.type) q = q.eq("animal_type", filters.type);
+    if (filters.district) q = q.ilike("district", filters.district);
+    if (typeof filters.maxPrice === "number") q = q.lte("price_rwf", filters.maxPrice);
+    if (filters.search) {
+      const t = filters.search.replace(/[%,]/g, "");
+      q = q.or(`title.ilike.%${t}%,breed.ilike.%${t}%,district.ilike.%${t}%`);
+    }
+    const { data } = await q;
+    return sortRows((data ?? []).map(mapListing), filters.sort);
+  }
 
+  let rows = storeListings();
   if (filters.type) rows = rows.filter((l) => l.animalType === filters.type);
   if (filters.district)
-    rows = rows.filter(
-      (l) => l.district.toLowerCase() === filters.district!.toLowerCase(),
-    );
+    rows = rows.filter((l) => l.district.toLowerCase() === filters.district!.toLowerCase());
   if (typeof filters.maxPrice === "number")
     rows = rows.filter((l) => l.priceRwf <= filters.maxPrice!);
   if (filters.search) {
-    const q = filters.search.toLowerCase().trim();
+    const ql = filters.search.toLowerCase().trim();
     rows = rows.filter(
       (l) =>
-        l.title.toLowerCase().includes(q) ||
-        l.breed.toLowerCase().includes(q) ||
-        l.animalType.includes(q) ||
-        l.district.toLowerCase().includes(q),
+        l.title.toLowerCase().includes(ql) ||
+        l.breed.toLowerCase().includes(ql) ||
+        l.animalType.includes(ql) ||
+        l.district.toLowerCase().includes(ql),
     );
   }
+  return sortRows(rows, filters.sort);
+}
 
-  switch (filters.sort) {
-    case "price-asc":
-      rows = [...rows].sort((a, b) => a.priceRwf - b.priceRwf);
-      break;
-    case "price-desc":
-      rows = [...rows].sort((a, b) => b.priceRwf - a.priceRwf);
-      break;
-    default:
-      rows = [...rows].sort(
-        (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt),
-      );
+export async function getFeaturedListings(limit = 4): Promise<PublicListing[]> {
+  if (sb()) {
+    const c = createSupabasePublicClient();
+    const { data } = await c
+      .from("fg_public_listings")
+      .select("*")
+      .order("featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    return (data ?? []).map(mapListing);
   }
-
-  // Featured first within the chosen sort.
-  return [...rows].sort((a, b) => Number(b.featured) - Number(a.featured));
+  const all = storeListings();
+  return [...all.filter((l) => l.featured), ...all.filter((l) => !l.featured)].slice(0, limit);
 }
 
-export async function getFeaturedListings(
-  limit = 4,
-): Promise<PublicListing[]> {
-  const featured = activeListings().filter((l) => l.featured);
-  const rest = activeListings().filter((l) => !l.featured);
-  return [...featured, ...rest].slice(0, limit);
-}
-
-export async function getListingBySlug(
-  slug: string,
-): Promise<PublicListing | null> {
-  return activeListings().find((l) => l.slug === slug) ?? null;
+export async function getListingBySlug(slug: string): Promise<PublicListing | null> {
+  if (sb()) {
+    const c = createSupabasePublicClient();
+    const { data } = await c.from("fg_public_listings").select("*").eq("slug", slug).maybeSingle();
+    return data ? mapListing(data) : null;
+  }
+  return storeListings().find((l) => l.slug === slug) ?? null;
 }
 
 export async function getRelatedListings(
   listing: PublicListing,
   limit = 3,
 ): Promise<PublicListing[]> {
-  return activeListings()
+  if (sb()) {
+    const c = createSupabasePublicClient();
+    const { data } = await c
+      .from("fg_public_listings")
+      .select("*")
+      .eq("animal_type", listing.animalType)
+      .neq("id", listing.id)
+      .limit(limit);
+    return (data ?? []).map(mapListing);
+  }
+  return storeListings()
     .filter((l) => l.animalType === listing.animalType && l.id !== listing.id)
     .slice(0, limit);
 }
 
 export async function getAllSlugs(): Promise<string[]> {
-  return activeListings().map((l) => l.slug);
+  if (sb()) {
+    const c = createSupabasePublicClient();
+    const { data } = await c.from("fg_public_listings").select("slug");
+    return (data ?? []).map((r) => String(r.slug));
+  }
+  return storeListings().map((l) => l.slug);
 }
 
-export async function getCategoryCounts(): Promise<
-  { type: AnimalType; count: number }[]
-> {
-  const rows = activeListings();
-  return CATEGORY_LIST.map((c) => ({
-    type: c.type,
-    count: rows.filter((l) => l.animalType === c.type).length,
+export async function getCategoryCounts(): Promise<{ type: AnimalType; count: number }[]> {
+  let rows: { animalType: AnimalType }[];
+  if (sb()) {
+    const c = createSupabasePublicClient();
+    const { data } = await c.from("fg_public_listings").select("animal_type");
+    rows = (data ?? []).map((r) => ({ animalType: r.animal_type as AnimalType }));
+  } else {
+    rows = storeListings();
+  }
+  return CATEGORY_LIST.map((cat) => ({
+    type: cat.type,
+    count: rows.filter((l) => l.animalType === cat.type).length,
   }));
 }
 
 export async function getDistricts(): Promise<string[]> {
-  return Array.from(new Set(activeListings().map((l) => l.district))).sort();
+  if (sb()) {
+    const c = createSupabasePublicClient();
+    const { data } = await c.from("fg_public_listings").select("district");
+    return Array.from(new Set((data ?? []).map((r) => String(r.district)))).sort();
+  }
+  return Array.from(new Set(storeListings().map((l) => l.district))).sort();
 }

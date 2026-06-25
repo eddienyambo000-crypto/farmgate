@@ -47,7 +47,7 @@ export function SellForm() {
           Application received
         </h3>
         <p className="mx-auto mt-2 max-w-sm text-ink-soft">
-          Thank you. The FarmGate team will call you to verify your animals and
+          Thank you. The Farmgate team will call you to verify your animals and
           get your first listings live. Keep your phone close.
         </p>
       </div>
@@ -104,7 +104,7 @@ export function SellForm() {
         {pending ? "Sending…" : "Apply to become a keeper"}
       </button>
       <p className="text-center text-xs text-ink-muted">
-        Free to apply. FarmGate verifies every keeper before listing.
+        Free to apply. Farmgate verifies every keeper before listing.
       </p>
     </form>
   );

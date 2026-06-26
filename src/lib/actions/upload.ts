@@ -11,7 +11,7 @@ export interface UploadResult {
   error?: string;
 }
 
-const BUCKET = "fg-listings";
+const BUCKETS = new Set(["fg-listings", "fg-brand"]);
 
 /**
  * Uploads an animal photo. With Supabase configured it stores the file in the
@@ -38,16 +38,18 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
     };
   }
 
+  const requested = String(formData.get("bucket") ?? "fg-listings");
+  const bucket = BUCKETS.has(requested) ? requested : "fg-listings";
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${new Date().getFullYear()}/${randomUUID()}.${ext}`;
   const supabase = createSupabaseAdminClient();
   const bytes = new Uint8Array(await file.arrayBuffer());
 
   const { error } = await supabase.storage
-    .from(BUCKET)
+    .from(bucket)
     .upload(path, bytes, { contentType: file.type, upsert: false });
   if (error) return { ok: false, error: error.message };
 
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return { ok: true, url: data.publicUrl };
 }

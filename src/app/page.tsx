@@ -25,15 +25,17 @@ import {
 } from "@/components/icons";
 import { getFeaturedListings, getDistricts } from "@/lib/data/listings";
 import { getTestimonials } from "@/lib/data/testimonials";
+import { getSettings } from "@/lib/data/settings";
 import { CATEGORY_LIST } from "@/lib/categories";
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [featured, testimonials, districts] = await Promise.all([
+  const [featured, testimonials, districts, settings] = await Promise.all([
     getFeaturedListings(4),
     getTestimonials(),
     getDistricts(),
+    getSettings(),
   ]);
 
   return (
@@ -51,16 +53,21 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={0.08}>
               <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink text-balance sm:text-5xl lg:text-6xl">
-                Healthy animals,
-                <br />
-                <span className="text-forest">direct from the farm.</span>
+                {settings.heroTitle ? (
+                  settings.heroTitle
+                ) : (
+                  <>
+                    Healthy animals,
+                    <br />
+                    <span className="text-forest">direct from the farm.</span>
+                  </>
+                )}
               </h1>
             </Reveal>
             <Reveal delay={0.16}>
               <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-soft text-pretty">
-                Buy cattle, goats, pigs, chickens and rabbits from verified
-                Rwandan keepers. Fair prices, real photos, vaccination records —
-                and no middlemen taking a cut on either side.
+                {settings.heroSubtitle ??
+                  "Buy cattle, goats, pigs, chickens and rabbits from verified Rwandan keepers. Fair prices, real photos, vaccination records — and no middlemen taking a cut on either side."}
               </p>
             </Reveal>
             <Reveal delay={0.24}>

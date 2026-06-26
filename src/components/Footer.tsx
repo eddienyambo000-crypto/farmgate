@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { SITE } from "@/lib/site";
 import { CATEGORY_LIST } from "@/lib/categories";
+import { getSettings } from "@/lib/data/settings";
 import { MapPinIcon, WhatsAppIcon } from "./icons";
 
-export function Footer() {
+export async function Footer() {
   const year = new Date().getFullYear();
+  const settings = await getSettings();
   return (
     <footer className="mt-auto border-t border-forest-deep/20 bg-forest-dark text-cream/80">
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
@@ -30,7 +32,7 @@ export function Footer() {
             {CATEGORY_LIST.map((c) => (
               <li key={c.type}>
                 <Link
-                  href={`/animals?type=${c.type}`}
+                  href={`/livestock/${c.type}`}
                   className="text-cream/70 transition-colors hover:text-white"
                 >
                   {c.plural}
@@ -77,7 +79,7 @@ export function Footer() {
             team — we handle every enquiry directly.
           </p>
           <a
-            href={`https://wa.me/${SITE.platform.whatsapp}`}
+            href={`https://wa.me/${settings.contactWhatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 inline-flex items-center gap-2 rounded-[var(--radius)] bg-gold px-4 py-2.5 text-sm font-semibold text-forest-dark transition-colors hover:bg-white"
@@ -85,6 +87,38 @@ export function Footer() {
             <WhatsAppIcon className="h-4 w-4" />
             Chat on WhatsApp
           </a>
+          <p className="mt-4 text-sm">
+            <a
+              href={`mailto:${settings.contactEmail}`}
+              className="text-cream/70 transition-colors hover:text-white"
+            >
+              {settings.contactEmail}
+            </a>
+          </p>
+          {(settings.instagram || settings.facebook) && (
+            <div className="mt-3 flex gap-4 text-sm">
+              {settings.instagram && (
+                <a
+                  href={settings.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cream/70 hover:text-white"
+                >
+                  Instagram
+                </a>
+              )}
+              {settings.facebook && (
+                <a
+                  href={settings.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cream/70 hover:text-white"
+                >
+                  Facebook
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

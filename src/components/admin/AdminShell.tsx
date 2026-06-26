@@ -6,6 +6,10 @@ const TABS = [
   { href: "/admin/listings", label: "Listings" },
   { href: "/admin/leads", label: "Leads" },
   { href: "/admin/keepers", label: "Keepers" },
+  { href: "/admin/promotions", label: "Promotions" },
+  { href: "/admin/testimonials", label: "Testimonials" },
+  { href: "/admin/guides", label: "Guides" },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
 export function AdminShell({

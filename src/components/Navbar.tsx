@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ButtonLink } from "./ui/Button";
 import { MenuIcon, XIcon } from "./icons";
 import { LanguageToggle } from "./LanguageToggle";
 import { useI18n } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings-context";
 import type { DictKey } from "@/lib/i18n/dictionary";
 
 const NAV: { href: string; key: DictKey }[] = [
@@ -125,6 +127,18 @@ export function Navbar() {
 }
 
 function Logo() {
+  const { logoUrl } = useSettings();
+  if (logoUrl) {
+    return (
+      <Image
+        src={logoUrl}
+        alt="Farmgate Rwanda logo"
+        width={36}
+        height={36}
+        className="h-9 w-9 rounded-[var(--radius-sm)] object-contain"
+      />
+    );
+  }
   return (
     <span className="grid h-9 w-9 place-items-center rounded-[var(--radius-sm)] bg-forest text-white shadow-[var(--shadow-sm)]">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>

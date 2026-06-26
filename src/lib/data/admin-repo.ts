@@ -422,3 +422,163 @@ export async function deleteApplication(id: string): Promise<boolean> {
   arr.splice(i, 1);
   return true;
 }
+
+// ============================ Testimonials ============================
+export interface TestimonialRow {
+  id: string;
+  name: string;
+  location: string;
+  role: string;
+  quote: string;
+  quoteRw: string | null;
+  rating: number;
+  published: boolean;
+  sort: number;
+}
+export interface TestimonialInput {
+  name: string;
+  location: string;
+  role: string;
+  quote: string;
+  quoteRw: string | null;
+  rating: number;
+  published: boolean;
+  sort: number;
+}
+
+export async function listTestimonialsAdmin(): Promise<TestimonialRow[]> {
+  if (!sb()) return [];
+  const { data } = await admin().from("fg_testimonials").select("*").order("sort", { ascending: true });
+  return (data ?? []).map((r) => ({
+    id: String(r.id),
+    name: String(r.name),
+    location: String(r.location ?? ""),
+    role: String(r.role ?? "Buyer"),
+    quote: String(r.quote ?? ""),
+    quoteRw: (r.quote_rw as string) ?? null,
+    rating: Number(r.rating ?? 5),
+    published: Boolean(r.published),
+    sort: Number(r.sort ?? 0),
+  }));
+}
+
+function testimonialRow(i: TestimonialInput) {
+  return {
+    name: i.name,
+    location: i.location,
+    role: i.role,
+    quote: i.quote,
+    quote_rw: i.quoteRw,
+    rating: i.rating,
+    published: i.published,
+    sort: i.sort,
+  };
+}
+
+export async function createTestimonial(i: TestimonialInput): Promise<boolean> {
+  if (!sb()) return false;
+  const { error } = await admin().from("fg_testimonials").insert(testimonialRow(i));
+  return !error;
+}
+export async function updateTestimonial(id: string, i: TestimonialInput): Promise<boolean> {
+  if (!sb()) return false;
+  const { error } = await admin().from("fg_testimonials").update(testimonialRow(i)).eq("id", id);
+  return !error;
+}
+export async function deleteTestimonial(id: string): Promise<boolean> {
+  if (!sb()) return false;
+  const { error } = await admin().from("fg_testimonials").delete().eq("id", id);
+  return !error;
+}
+
+// ============================ Guides (blog) ============================
+export interface GuideRow {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  coverImage: string | null;
+  author: string;
+  tags: string[];
+  readMins: number;
+  published: boolean;
+  publishedAt: string;
+}
+export interface GuideInput {
+  title: string;
+  excerpt: string;
+  body: string;
+  coverImage: string | null;
+  author: string;
+  tags: string[];
+  readMins: number;
+  published: boolean;
+}
+
+function mapGuideRow(r: Row): GuideRow {
+  return {
+    id: String(r.id),
+    slug: String(r.slug),
+    title: String(r.title),
+    excerpt: String(r.excerpt ?? ""),
+    body: String(r.body ?? ""),
+    coverImage: (r.cover_image as string) ?? null,
+    author: String(r.author ?? "Farmgate"),
+    tags: Array.isArray(r.tags) ? (r.tags as string[]) : [],
+    readMins: Number(r.read_mins ?? 4),
+    published: Boolean(r.published),
+    publishedAt: String(r.published_at ?? new Date().toISOString()),
+  };
+}
+
+export async function listGuidesAdmin(): Promise<GuideRow[]> {
+  if (!sb()) return [];
+  const { data } = await admin().from("fg_guides").select("*").order("published_at", { ascending: false });
+  return (data ?? []).map(mapGuideRow);
+}
+export async function getGuideByIdAdmin(id: string): Promise<GuideRow | null> {
+  if (!sb()) return null;
+  const { data } = await admin().from("fg_guides").select("*").eq("id", id).maybeSingle();
+  return data ? mapGuideRow(data) : null;
+}
+
+async function uniqueGuideSlug(title: string): Promise<string> {
+  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "guide";
+  const { data } = await admin().from("fg_guides").select("slug").ilike("slug", `${base}%`);
+  const taken = new Set((data ?? []).map((r) => String(r.slug)));
+  if (!taken.has(base)) return base;
+  let i = 2;
+  while (taken.has(`${base}-${i}`)) i++;
+  return `${base}-${i}`;
+}
+
+function guideRow(i: GuideInput) {
+  return {
+    title: i.title,
+    excerpt: i.excerpt,
+    body: i.body,
+    cover_image: i.coverImage,
+    author: i.author || "Farmgate",
+    tags: i.tags,
+    read_mins: i.readMins,
+    published: i.published,
+  };
+}
+
+export async function createGuide(i: GuideInput): Promise<boolean> {
+  if (!sb()) return false;
+  const slug = await uniqueGuideSlug(i.title);
+  const { error } = await admin().from("fg_guides").insert({ ...guideRow(i), slug });
+  return !error;
+}
+export async function updateGuide(id: string, i: GuideInput): Promise<boolean> {
+  if (!sb()) return false;
+  const { error } = await admin().from("fg_guides").update(guideRow(i)).eq("id", id);
+  return !error;
+}
+export async function deleteGuide(id: string): Promise<boolean> {
+  if (!sb()) return false;
+  const { error } = await admin().from("fg_guides").delete().eq("id", id);
+  return !error;
+}

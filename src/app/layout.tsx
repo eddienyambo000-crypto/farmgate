@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SITE } from "@/lib/site";
+import { getSettings } from "@/lib/data/settings";
+import { SettingsProvider } from "@/lib/settings-context";
 import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -60,9 +62,10 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const settings = await getSettings();
   return (
     <html
       lang="en"
@@ -70,14 +73,21 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <OrganizationJsonLd />
-        <LanguageProvider>
-          <SmoothScroll />
-          <Navbar />
-          <main className="flex-1 pb-20 lg:pb-0">{children}</main>
-          <Footer />
-          <WhatsAppFab />
-          <DockNav />
-        </LanguageProvider>
+        <SettingsProvider value={settings}>
+          <LanguageProvider>
+            <SmoothScroll />
+            {settings.announcement && (
+              <div className="bg-forest-deep px-4 py-2 text-center text-sm font-medium text-cream">
+                {settings.announcement}
+              </div>
+            )}
+            <Navbar />
+            <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+            <Footer />
+            <WhatsAppFab />
+            <DockNav />
+          </LanguageProvider>
+        </SettingsProvider>
         <Analytics />
         <SpeedInsights />
       </body>

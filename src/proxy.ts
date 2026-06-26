@@ -6,8 +6,10 @@ import { createServerClient } from "@supabase/ssr";
  * unauthenticated access to /admin (except the login page). Fine-grained admin
  * authorization (fg_admins membership) is enforced again in the admin layout
  * and in every server action — this is defense in depth.
+ *
+ * Uses the Next.js 16 `proxy` convention (the successor to `middleware`).
  */
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   let res = NextResponse.next({ request: req });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

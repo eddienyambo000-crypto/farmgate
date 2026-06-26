@@ -17,7 +17,7 @@ export function CategoryGrid() {
       {CATEGORY_LIST.map((c) => (
         <Link
           key={c.type}
-          href={`/animals?type=${c.type}`}
+          href={`/livestock/${c.type}`}
           className="group flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-5 text-center shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 ease-[var(--ease-out)] hover:-translate-y-1 hover:border-forest/40 hover:shadow-[var(--shadow-md)]"
         >
           <span className="grid h-14 w-14 place-items-center rounded-full bg-leaf-tint text-forest-deep transition-colors duration-300 group-hover:bg-forest group-hover:text-white">

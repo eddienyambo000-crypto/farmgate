@@ -7,11 +7,11 @@ import {
   listInquiries,
   listApplications,
   listAllListings,
-  listSellers,
 } from "@/lib/data/admin-repo";
 import { formatDate } from "@/lib/format";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { ButtonLink } from "@/components/ui/Button";
+import { LeadsTrend, ListingsByType } from "@/components/admin/AnalyticsCharts";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -21,19 +21,37 @@ export const metadata: Metadata = {
 export default async function AdminOverview() {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  const [leads, applications, listings, sellers] = await Promise.all([
+  const [leads, applications, listings] = await Promise.all([
     listInquiries(),
     listApplications(),
     listAllListings(),
-    listSellers(),
   ]);
 
+  const totalViews = listings.reduce((s, l) => s + l.views, 0);
   const stats = [
     ["New leads", leads.filter((l) => l.status === "new").length, "/admin/leads"],
     ["Applications", applications.length, "/admin/keepers"],
     ["Active listings", listings.filter((l) => l.status === "active").length, "/admin/listings"],
-    ["Verified keepers", sellers.filter((s) => s.verified).length, "/admin/keepers"],
+    ["Total views", totalViews, "/admin/listings"],
   ] as const;
+
+  // Leads over the last 14 days.
+  const now = new Date();
+  const leadsByDay = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (13 - i));
+    const key = d.toISOString().slice(0, 10);
+    return {
+      day: d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+      leads: leads.filter((l) => l.createdAt.slice(0, 10) === key).length,
+    };
+  });
+
+  // Listings grouped by animal type.
+  const typeCounts = new Map<string, number>();
+  for (const l of listings)
+    typeCounts.set(l.animalType, (typeCounts.get(l.animalType) ?? 0) + 1);
+  const byType = Array.from(typeCounts, ([type, count]) => ({ type, count }));
 
   return (
     <AdminShell
@@ -66,6 +84,11 @@ export default async function AdminOverview() {
             <p className="mt-1 text-sm text-ink-muted">{label}</p>
           </Link>
         ))}
+      </section>
+
+      <section className="mt-6 grid gap-6 lg:grid-cols-2">
+        <LeadsTrend data={leadsByDay} />
+        <ListingsByType data={byType} />
       </section>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">

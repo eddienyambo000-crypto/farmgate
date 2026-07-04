@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { ListingCard } from "@/components/ListingCard";
-import { FilterBar } from "@/components/FilterBar";
+import { AnimalsBrowser } from "@/components/AnimalsBrowser";
 import { getListings, getDistricts } from "@/lib/data/listings";
 import { CATEGORIES } from "@/lib/categories";
 import type { AnimalType } from "@/lib/types";
@@ -14,30 +13,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "/animals" },
 };
 
-type SearchParams = {
-  type?: string;
-  district?: string;
-  search?: string;
-  sort?: string;
-};
-
 export default async function AnimalsPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<{ type?: string; search?: string }>;
 }) {
   const sp = await searchParams;
   const type = ANIMAL_TYPES.includes(sp.type as AnimalType)
     ? (sp.type as AnimalType)
     : undefined;
 
+  // Send ALL active listings to the browser; filtering happens client-side so
+  // the controls and results can never disagree.
   const [listings, districts] = await Promise.all([
-    getListings({
-      type,
-      district: sp.district,
-      search: sp.search,
-      sort: sp.sort as "newest" | "price-asc" | "price-desc" | undefined,
-    }),
+    getListings({}),
     getDistricts(),
   ]);
 
@@ -66,31 +55,8 @@ export default async function AnimalsPage({
 
       <div className="container-page py-8 lg:py-10">
         <Suspense fallback={<div className="h-12" />}>
-          <FilterBar districts={districts} />
+          <AnimalsBrowser listings={listings} districts={districts} />
         </Suspense>
-
-        <p className="mt-6 text-sm text-ink-muted">
-          {listings.length} {listings.length === 1 ? "animal" : "animals"}{" "}
-          available
-        </p>
-
-        {listings.length > 0 ? (
-          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-10 rounded-[var(--radius-lg)] border border-dashed border-line bg-surface p-12 text-center">
-            <p className="font-display text-xl font-bold text-ink">
-              No animals match your search
-            </p>
-            <p className="mt-2 text-ink-soft">
-              Try a different animal type or district — new animals are listed
-              every week.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

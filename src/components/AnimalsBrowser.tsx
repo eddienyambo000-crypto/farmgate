@@ -3,11 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ListingCard } from "@/components/ListingCard";
-import { CATEGORY_LIST } from "@/lib/categories";
+import { CATEGORY_LIST, CATEGORIES } from "@/lib/categories";
 import { ANIMAL_TYPES, type AnimalType, type PublicListing } from "@/lib/types";
 import { ChevronDownIcon, SearchIcon } from "@/components/icons";
 
 type Sort = "newest" | "price-asc" | "price-desc";
+
+// Everyday words buyers actually type, mapped to each animal type.
+const SYNONYMS: Record<AnimalType, string> = {
+  cattle: "cow cows bull bulls calf heifer dairy beef inka",
+  goat: "goats kid buck doe ihene",
+  sheep: "lamb lambs mutton ram ewe intama",
+  pig: "pigs swine pork piglet sow boar ingurube",
+  chicken: "chickens hen hens broiler broilers layer layers poultry chick inkoko",
+  rabbit: "rabbits bunny doe buck kit urukwavu",
+};
 
 /**
  * Client-side marketplace browser. The server sends ALL active listings (good
@@ -51,14 +61,28 @@ export function AnimalsBrowser({
         (l) => l.district.toLowerCase() === district.toLowerCase(),
       );
     const q = search.toLowerCase().trim();
-    if (q)
-      rows = rows.filter(
-        (l) =>
-          l.title.toLowerCase().includes(q) ||
-          l.breed.toLowerCase().includes(q) ||
-          l.animalType.includes(q) ||
-          l.district.toLowerCase().includes(q),
-      );
+    if (q) {
+      // Also match the singular form so "goats" finds a "goat", "cows" a "cow".
+      const qSingular = q.replace(/s$/, "");
+      rows = rows.filter((l) => {
+        const cat = CATEGORIES[l.animalType];
+        const hay = [
+          l.title,
+          l.breed,
+          l.district,
+          l.sector,
+          l.animalType,
+          l.purpose,
+          cat.label,
+          cat.plural,
+          cat.labelRw,
+          SYNONYMS[l.animalType],
+        ]
+          .join(" ")
+          .toLowerCase();
+        return hay.includes(q) || (qSingular.length > 1 && hay.includes(qSingular));
+      });
+    }
 
     if (sort === "price-asc") rows.sort((a, b) => a.priceRwf - b.priceRwf);
     else if (sort === "price-desc") rows.sort((a, b) => b.priceRwf - a.priceRwf);

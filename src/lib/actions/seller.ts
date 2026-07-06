@@ -5,7 +5,6 @@ import { addApplication } from "@/lib/data/admin-repo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { notifyOwner } from "@/lib/notify";
-import { ANIMAL_TYPES } from "@/lib/types";
 
 export interface SellerInput {
   fullName: string;
@@ -44,7 +43,7 @@ export async function submitSellerApplication(
     return { ok: false, error: "Please enter a valid Rwandan phone number." };
 
   if (!district) return { ok: false, error: "Please select your district." };
-  if (!ANIMAL_TYPES.includes(input.animalType as (typeof ANIMAL_TYPES)[number]))
+  if (!input.animalType)
     return { ok: false, error: "Please choose what animals you keep." };
 
   if (isSupabaseConfigured()) {

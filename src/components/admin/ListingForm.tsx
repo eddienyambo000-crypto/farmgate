@@ -3,8 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { PublicListing } from "@/lib/types";
-import { ANIMAL_TYPES } from "@/lib/types";
-import { CATEGORIES } from "@/lib/categories";
+import { useCategories } from "@/lib/categories-context";
 import type { ActionResult } from "@/lib/actions/admin";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 
@@ -29,9 +28,11 @@ export function ListingForm({
   sellers: { id: string; displayName: string }[];
   listing?: PublicListing & { sellerId?: string };
 }) {
+  const categories = useCategories();
   const [state, formAction, pending] = useActionState(action, undefined);
   const [images, setImages] = useState<string[]>(listing?.images ?? []);
   const [newKeeper, setNewKeeper] = useState(sellers.length === 0);
+  const [newCat, setNewCat] = useState(categories.length === 0);
   const error = state?.ok === false ? state.error : null;
 
   const sellerId =
@@ -47,11 +48,39 @@ export function ListingForm({
           <input name="title" required defaultValue={listing?.title} placeholder="e.g. Friesian Dairy Cow" className={input} />
         </Field>
         <Field label="Animal type">
-          <select name="animalType" defaultValue={listing?.animalType ?? "cattle"} className={input}>
-            {ANIMAL_TYPES.map((t) => (
-              <option key={t} value={t}>{CATEGORIES[t].label}</option>
-            ))}
-          </select>
+          {!newCat ? (
+            <div className="flex gap-2">
+              <select
+                name="animalType"
+                defaultValue={listing?.animalType ?? categories[0]?.type ?? "cattle"}
+                className={`${input} flex-1`}
+              >
+                {categories.map((c) => (
+                  <option key={c.type} value={c.type}>{c.label}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setNewCat(true)}
+                className="inline-flex h-11 shrink-0 items-center rounded-[var(--radius)] border border-forest/30 bg-white px-3 text-sm font-semibold text-forest-deep transition-colors hover:border-forest cursor-pointer"
+              >
+                + New
+              </button>
+            </div>
+          ) : (
+            <div>
+              <input name="animalType" required placeholder="New animal (e.g. Turkey)" className={input} />
+              {categories.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setNewCat(false)}
+                  className="mt-1.5 text-xs font-medium text-forest-deep hover:underline cursor-pointer"
+                >
+                  ← Choose an existing type
+                </button>
+              )}
+            </div>
+          )}
         </Field>
         <Field label="Keeper (animal owner)" full>
           {!newKeeper ? (

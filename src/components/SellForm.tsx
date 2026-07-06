@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { submitSellerApplication } from "@/lib/actions/seller";
-import { CATEGORY_LIST } from "@/lib/categories";
+import { useCategories } from "@/lib/categories-context";
 import { CheckIcon } from "./icons";
 
 const DISTRICTS = [
@@ -17,6 +17,7 @@ const inputCls =
   "w-full rounded-[var(--radius)] border border-line bg-surface px-4 py-2.5 text-ink outline-none transition-colors placeholder:text-ink-muted hover:border-forest/30 focus-visible:border-forest";
 
 export function SellForm() {
+  const categories = useCategories();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -77,7 +78,7 @@ export function SellForm() {
         <Field label="What do you keep?" htmlFor="animalType">
           <select id="animalType" name="animalType" required className={inputCls}>
             <option value="">Select animal…</option>
-            {CATEGORY_LIST.map((c) => (
+            {categories.map((c) => (
               <option key={c.type} value={c.type}>{c.plural}</option>
             ))}
           </select>

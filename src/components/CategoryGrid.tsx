@@ -1,8 +1,9 @@
-import Link from "next/link";
-import { CATEGORY_LIST } from "@/lib/categories";
-import type { AnimalType } from "@/lib/types";
+"use client";
 
-const ART: Record<AnimalType, string> = {
+import Link from "next/link";
+import { useCategories } from "@/lib/categories-context";
+
+const ART: Record<string, string> = {
   cattle: "M4 9c0-1 1-2 2-2 .5-2 2-3 6-3s5.5 1 6 3c1 0 2 1 2 2 0 1.2-1 2-1 2v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-3s-1-.8-1-2Z M9 8.5h.01M15 8.5h.01",
   goat: "M5 6c-1 0-2 1-2 3 0 1 .5 2 1.5 2.5M19 6c1 0 2 1 2 3 0 1-.5 2-1.5 2.5M7 9c0 5 2 9 5 9s5-4 5-9c0-2-2-3-5-3S7 7 7 9Z M10 11h.01M14 11h.01",
   sheep: "M7 9a3 3 0 0 1 0-2 3 3 0 0 1 3-2 3 3 0 0 1 4 0 3 3 0 0 1 3 2 3 3 0 0 1 0 2 3 3 0 0 1-1 5 3 3 0 0 1-3 2 3 3 0 0 1-4 0 3 3 0 0 1-3-2 3 3 0 0 1 1-5Z M10 11h.01M14 11h.01",
@@ -10,11 +11,14 @@ const ART: Record<AnimalType, string> = {
   chicken: "M9 4c1.5 0 2.5 1 2.5 2.5 2 .5 3.5 2.5 3.5 5 0 3.5-2.5 6.5-5 6.5s-5-2-5-5.5c0-1.5.5-2.5 1.5-3.5M9 4 7.5 2.5M9 4l1.5-1.5 M11.5 9h.01 M15 11l3-1",
   rabbit: "M9 13c-2 0-3.5 1.5-3.5 3.5S7 20 9 20h6c2 0 3.5-1.5 3.5-3.5S17 13 15 13M8 13C7 11 6.5 7 8 4c1 1.5 1.5 4 1.5 6M16 13c1-2 1.5-6 0-9-1 1.5-1.5 4-1.5 6 M10.5 16h.01M13.5 16h.01",
 };
+// Generic "paw" fallback for any custom category.
+const FALLBACK = "M12 13c2.5 0 4.5 2 4.5 4.5S14.5 21 12 21s-4.5-1.5-4.5-3.5S9.5 13 12 13Z M6.5 11a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z M17.5 11a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Z M9.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z M14.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z";
 
 export function CategoryGrid() {
+  const categories = useCategories();
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-      {CATEGORY_LIST.map((c) => (
+      {categories.map((c) => (
         <Link
           key={c.type}
           href={`/livestock/${c.type}`}
@@ -32,12 +36,10 @@ export function CategoryGrid() {
               strokeLinejoin="round"
               aria-hidden
             >
-              <path d={ART[c.type]} />
+              <path d={ART[c.type] ?? FALLBACK} />
             </svg>
           </span>
-          <span className="font-display text-base font-bold text-ink">
-            {c.label}
-          </span>
+          <span className="font-display text-base font-bold text-ink">{c.label}</span>
           <span className="-mt-2 text-xs text-ink-muted">{c.labelRw}</span>
         </Link>
       ))}

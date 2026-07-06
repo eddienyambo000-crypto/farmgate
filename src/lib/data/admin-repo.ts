@@ -9,6 +9,7 @@ import {
 } from "./store";
 import { isSupabaseConfigured } from "../supabase/config";
 import { createSupabaseAdminClient } from "../supabase/admin";
+import { categorySlug } from "../categories";
 import type {
   PublicListing,
   PublicSeller,
@@ -693,5 +694,104 @@ export async function updateGuide(id: string, i: GuideInput): Promise<boolean> {
 export async function deleteGuide(id: string): Promise<boolean> {
   if (!sb()) return false;
   const { error } = await admin().from("fg_guides").delete().eq("id", id);
+  return !error;
+}
+
+// ============================ Categories ============================
+export interface CategoryRow {
+  slug: string;
+  label: string;
+  labelRw: string;
+  plural: string;
+  blurb: string;
+  synonyms: string;
+  sort: number;
+  active: boolean;
+}
+export interface CategoryInput {
+  label: string;
+  labelRw: string;
+  plural: string;
+  blurb: string;
+  synonyms: string;
+  sort: number;
+  active: boolean;
+}
+
+function titleCase(s: string): string {
+  return s.trim().replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+export async function listCategories(): Promise<CategoryRow[]> {
+  if (!sb()) return [];
+  const { data } = await admin().from("fg_categories").select("*").order("sort", { ascending: true });
+  return (data ?? []).map((r) => ({
+    slug: String(r.slug),
+    label: String(r.label),
+    labelRw: String(r.label_rw ?? ""),
+    plural: String(r.plural ?? r.label),
+    blurb: String(r.blurb ?? ""),
+    synonyms: String(r.synonyms ?? ""),
+    sort: Number(r.sort ?? 0),
+    active: Boolean(r.active),
+  }));
+}
+
+/** Returns the slug of an existing category, creating it if the name is new. */
+export async function findOrCreateCategory(nameOrSlug: string): Promise<string> {
+  const slug = categorySlug(nameOrSlug);
+  if (!slug || !sb()) return slug;
+  const { data } = await admin().from("fg_categories").select("slug").eq("slug", slug).maybeSingle();
+  if (data?.slug) return String(data.slug);
+  const label = titleCase(nameOrSlug);
+  await admin().from("fg_categories").insert({
+    slug,
+    label,
+    plural: label,
+    blurb: "",
+    synonyms: nameOrSlug.toLowerCase(),
+    sort: 999,
+    active: true,
+  });
+  return slug;
+}
+
+export async function createCategory(i: CategoryInput): Promise<boolean> {
+  if (!sb()) return false;
+  const slug = categorySlug(i.label);
+  if (!slug) return false;
+  const { error } = await admin().from("fg_categories").upsert({
+    slug,
+    label: i.label,
+    label_rw: i.labelRw || null,
+    plural: i.plural || i.label,
+    blurb: i.blurb,
+    synonyms: i.synonyms,
+    sort: i.sort,
+    active: i.active,
+  });
+  return !error;
+}
+
+export async function updateCategory(slug: string, i: CategoryInput): Promise<boolean> {
+  if (!sb()) return false;
+  const { error } = await admin()
+    .from("fg_categories")
+    .update({
+      label: i.label,
+      label_rw: i.labelRw || null,
+      plural: i.plural || i.label,
+      blurb: i.blurb,
+      synonyms: i.synonyms,
+      sort: i.sort,
+      active: i.active,
+    })
+    .eq("slug", slug);
+  return !error;
+}
+
+export async function deleteCategory(slug: string): Promise<boolean> {
+  if (!sb()) return false;
+  const { error } = await admin().from("fg_categories").delete().eq("slug", slug);
   return !error;
 }

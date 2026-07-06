@@ -2,12 +2,16 @@ import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
 import { getAllSlugs } from "@/lib/data/listings";
 import { getGuideSlugs } from "@/lib/data/guides";
-import { ANIMAL_TYPES } from "@/lib/types";
+import { getCategories } from "@/lib/data/categories";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [slugs, guideSlugs] = await Promise.all([getAllSlugs(), getGuideSlugs()]);
+  const [slugs, guideSlugs, cats] = await Promise.all([
+    getAllSlugs(),
+    getGuideSlugs(),
+    getCategories(),
+  ]);
   const now = new Date();
 
   const staticPages = [
@@ -29,8 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // SEO landing pages (real URLs that rank).
-  const categoryPages = ANIMAL_TYPES.map((type) => ({
-    url: `${SITE.url}/livestock/${type}`,
+  const categoryPages = cats.map((c) => ({
+    url: `${SITE.url}/livestock/${c.type}`,
     lastModified: now,
     changeFrequency: "daily" as const,
     priority: 0.9,

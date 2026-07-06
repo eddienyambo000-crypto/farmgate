@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getListings } from "@/lib/data/listings";
-import { CATEGORIES } from "@/lib/categories";
-import { ANIMAL_TYPES, type AnimalType } from "@/lib/types";
+import { getCategories, getCategoryMap } from "@/lib/data/categories";
 import { ListingCard } from "@/components/ListingCard";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/Primitives";
@@ -17,12 +16,9 @@ import { SITE } from "@/lib/site";
 
 export const revalidate = 60;
 
-export function generateStaticParams() {
-  return ANIMAL_TYPES.map((type) => ({ type }));
-}
-
-function isType(t: string): t is AnimalType {
-  return ANIMAL_TYPES.includes(t as AnimalType);
+export async function generateStaticParams() {
+  const cats = await getCategories();
+  return cats.map((c) => ({ type: c.type }));
 }
 
 export async function generateMetadata({
@@ -31,8 +27,8 @@ export async function generateMetadata({
   params: Promise<{ type: string }>;
 }): Promise<Metadata> {
   const { type } = await params;
-  if (!isType(type)) return { title: "Not found" };
-  const c = CATEGORIES[type];
+  const c = (await getCategoryMap())[type];
+  if (!c) return { title: "Not found" };
   const title = `${c.plural} for Sale in Rwanda — Buy ${c.plural} Online`;
   return {
     title,
@@ -70,8 +66,8 @@ export default async function LivestockCategory({
   params: Promise<{ type: string }>;
 }) {
   const { type } = await params;
-  if (!isType(type)) notFound();
-  const c = CATEGORIES[type];
+  const c = (await getCategoryMap())[type];
+  if (!c) notFound();
   const listings = await getListings({ type });
   const faq = faqFor(c.plural);
 

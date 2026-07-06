@@ -5,7 +5,9 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SITE } from "@/lib/site";
 import { getSettings } from "@/lib/data/settings";
+import { getCategories } from "@/lib/data/categories";
 import { SettingsProvider } from "@/lib/settings-context";
+import { CategoriesProvider } from "@/lib/categories-context";
 import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -65,7 +67,10 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const settings = await getSettings();
+  const [settings, categories] = await Promise.all([
+    getSettings(),
+    getCategories(),
+  ]);
   return (
     <html
       lang="en"
@@ -74,6 +79,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <OrganizationJsonLd />
         <SettingsProvider value={settings}>
+          <CategoriesProvider value={categories}>
           <LanguageProvider>
             <SmoothScroll />
             {settings.announcement && (
@@ -87,6 +93,7 @@ export default async function RootLayout({
             <WhatsAppFab />
             <DockNav />
           </LanguageProvider>
+          </CategoriesProvider>
         </SettingsProvider>
         <Analytics />
         <SpeedInsights />

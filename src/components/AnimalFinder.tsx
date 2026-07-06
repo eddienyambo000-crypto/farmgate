@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { CATEGORY_LIST } from "@/lib/categories";
+import { useCategories } from "@/lib/categories-context";
 import type { AnimalType } from "@/lib/types";
 import { CheckIcon, ArrowRightIcon } from "@/components/icons";
 
@@ -15,6 +15,7 @@ const BUDGETS = [
 ];
 
 export function AnimalFinder({ districts }: { districts: string[] }) {
+  const categories = useCategories();
   const router = useRouter();
   const reduce = useReducedMotion();
   const [step, setStep] = useState(0);
@@ -71,7 +72,7 @@ export function AnimalFinder({ districts }: { districts: string[] }) {
             <motion.div key="s0" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
               <h2 className="font-display text-2xl font-bold text-ink">What animal are you looking for?</h2>
               <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {CATEGORY_LIST.map((c) => (
+                {categories.map((c) => (
                   <button
                     key={c.type}
                     onClick={() => {

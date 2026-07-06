@@ -10,6 +10,8 @@
  * anon Supabase key cannot select).
  */
 
+/** Default seed slugs. Categories are now DB-managed (fg_categories); this list
+ *  is only a fallback / default set. Animal type is a free-form slug string. */
 export const ANIMAL_TYPES = [
   "cattle",
   "goat",
@@ -18,7 +20,7 @@ export const ANIMAL_TYPES = [
   "chicken",
   "rabbit",
 ] as const;
-export type AnimalType = (typeof ANIMAL_TYPES)[number];
+export type AnimalType = string;
 
 export type Gender = "male" | "female" | "mixed";
 export type Purpose =

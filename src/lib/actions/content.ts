@@ -10,6 +10,9 @@ import {
   createGuide,
   updateGuide,
   deleteGuide,
+  createCategory,
+  updateCategory,
+  deleteCategory,
 } from "@/lib/data/admin-repo";
 
 export interface ContentResult {
@@ -115,4 +118,46 @@ export async function deleteGuideAction(fd: FormData): Promise<void> {
   await guard();
   await deleteGuide(str(fd, "id"));
   revalidateGuides();
+}
+
+// ---------------- Categories ----------------
+function parseCategory(fd: FormData) {
+  return {
+    label: str(fd, "label"),
+    labelRw: str(fd, "labelRw"),
+    plural: str(fd, "plural"),
+    blurb: str(fd, "blurb"),
+    synonyms: str(fd, "synonyms"),
+    sort: Number(str(fd, "sort")) || 0,
+    active: fd.get("active") === "on",
+  };
+}
+
+function revalidateCategories() {
+  revalidatePath("/", "layout");
+  revalidatePath("/animals");
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/admin/categories");
+}
+
+export async function createCategoryAction(fd: FormData): Promise<void> {
+  await guard();
+  if (str(fd, "label").length < 2) return;
+  await createCategory(parseCategory(fd));
+  revalidateCategories();
+  redirect("/admin/categories");
+}
+
+export async function updateCategoryAction(fd: FormData): Promise<void> {
+  await guard();
+  const slug = str(fd, "slug");
+  if (!slug) return;
+  await updateCategory(slug, parseCategory(fd));
+  revalidateCategories();
+}
+
+export async function deleteCategoryAction(fd: FormData): Promise<void> {
+  await guard();
+  await deleteCategory(str(fd, "id"));
+  revalidateCategories();
 }

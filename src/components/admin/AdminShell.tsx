@@ -4,6 +4,7 @@ import { logoutAction } from "@/lib/actions/admin-auth";
 const TABS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/listings", label: "Listings" },
+  { href: "/admin/categories", label: "Categories" },
   { href: "/admin/leads", label: "Leads" },
   { href: "/admin/keepers", label: "Keepers" },
   { href: "/admin/promotions", label: "Promotions" },

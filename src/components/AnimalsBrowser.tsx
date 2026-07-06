@@ -3,21 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ListingCard } from "@/components/ListingCard";
-import { CATEGORY_LIST, CATEGORIES } from "@/lib/categories";
-import { ANIMAL_TYPES, type AnimalType, type PublicListing } from "@/lib/types";
+import { useCategories } from "@/lib/categories-context";
+import { type AnimalType, type PublicListing } from "@/lib/types";
 import { ChevronDownIcon, SearchIcon } from "@/components/icons";
 
 type Sort = "newest" | "price-asc" | "price-desc";
-
-// Everyday words buyers actually type, mapped to each animal type.
-const SYNONYMS: Record<AnimalType, string> = {
-  cattle: "cow cows bull bulls calf heifer dairy beef inka",
-  goat: "goats kid buck doe ihene",
-  sheep: "lamb lambs mutton ram ewe intama",
-  pig: "pigs swine pork piglet sow boar ingurube",
-  chicken: "chickens hen hens broiler broilers layer layers poultry chick inkoko",
-  rabbit: "rabbits bunny doe buck kit urukwavu",
-};
 
 /**
  * Client-side marketplace browser. The server sends ALL active listings (good
@@ -32,10 +22,14 @@ export function AnimalsBrowser({
   listings: PublicListing[];
   districts: string[];
 }) {
+  const categories = useCategories();
+  const catMap = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.type, c])),
+    [categories],
+  );
   const params = useSearchParams();
-  const initialType = ANIMAL_TYPES.includes(params.get("type") as AnimalType)
-    ? (params.get("type") as AnimalType)
-    : "";
+  const paramType = params.get("type") ?? "";
+  const initialType = categories.some((c) => c.type === paramType) ? paramType : "";
 
   const [type, setType] = useState<AnimalType | "">(initialType);
   const [district, setDistrict] = useState(params.get("district") ?? "");
@@ -65,7 +59,7 @@ export function AnimalsBrowser({
       // Also match the singular form so "goats" finds a "goat", "cows" a "cow".
       const qSingular = q.replace(/s$/, "");
       rows = rows.filter((l) => {
-        const cat = CATEGORIES[l.animalType];
+        const cat = catMap[l.animalType];
         const hay = [
           l.title,
           l.breed,
@@ -73,11 +67,12 @@ export function AnimalsBrowser({
           l.sector,
           l.animalType,
           l.purpose,
-          cat.label,
-          cat.plural,
-          cat.labelRw,
-          SYNONYMS[l.animalType],
+          cat?.label,
+          cat?.plural,
+          cat?.labelRw,
+          cat?.synonyms,
         ]
+          .filter(Boolean)
           .join(" ")
           .toLowerCase();
         return hay.includes(q) || (qSingular.length > 1 && hay.includes(qSingular));
@@ -89,7 +84,7 @@ export function AnimalsBrowser({
     else rows.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
     return rows.sort((a, b) => Number(b.featured) - Number(a.featured));
-  }, [listings, type, district, sort, search]);
+  }, [listings, type, district, sort, search, catMap]);
 
   return (
     <>
@@ -106,7 +101,7 @@ export function AnimalsBrowser({
         </label>
 
         <Select label="Animal type" value={type} onChange={(v) => setType(v as AnimalType | "")}
-          options={[{ value: "", label: "All animals" }, ...CATEGORY_LIST.map((c) => ({ value: c.type, label: c.plural }))]} />
+          options={[{ value: "", label: "All animals" }, ...categories.map((c) => ({ value: c.type, label: c.plural }))]} />
         <Select label="District" value={district} onChange={setDistrict}
           options={[{ value: "", label: "All districts" }, ...districts.map((d) => ({ value: d, label: d }))]} />
         <Select label="Sort" value={sort} onChange={(v) => setSort(v as Sort)}

@@ -18,11 +18,10 @@ import {
   setInquiryStatus,
   deleteInquiry,
   deleteApplication,
+  findOrCreateCategory,
   type ListingInput,
 } from "@/lib/data/admin-repo";
-import { ANIMAL_TYPES } from "@/lib/types";
 import type {
-  AnimalType,
   Gender,
   Purpose,
   ListingStatus,
@@ -78,14 +77,16 @@ async function resolveSellerId(fd: FormData): Promise<string | null> {
   return str(fd, "sellerId") || null;
 }
 
-function parseListing(fd: FormData, sellerId: string): ListingInput | { error: string } {
+function parseListing(
+  fd: FormData,
+  sellerId: string,
+  animalType: string,
+): ListingInput | { error: string } {
   const title = str(fd, "title");
-  const animalType = str(fd, "animalType") as AnimalType;
   const priceRwf = Number(str(fd, "priceRwf"));
 
   if (title.length < 2) return { error: "Title is required." };
-  if (!ANIMAL_TYPES.includes(animalType))
-    return { error: "Pick a valid animal type." };
+  if (!animalType) return { error: "Choose or add an animal type." };
   if (!sellerId) return { error: "Choose or add the keeper this animal belongs to." };
   if (!Number.isFinite(priceRwf) || priceRwf < 0)
     return { error: "Enter a valid price." };
@@ -128,7 +129,8 @@ export async function createListingAction(
   await guard();
   const sellerId = await resolveSellerId(fd);
   if (!sellerId) return { ok: false, error: "Choose or add the keeper." };
-  const parsed = parseListing(fd, sellerId);
+  const animalType = await findOrCreateCategory(str(fd, "animalType"));
+  const parsed = parseListing(fd, sellerId, animalType);
   if ("error" in parsed) return { ok: false, error: parsed.error };
   const created = await createListing(parsed);
   revalidateAll(created?.slug);
@@ -143,7 +145,8 @@ export async function updateListingAction(
   await guard();
   const sellerId = await resolveSellerId(fd);
   if (!sellerId) return { ok: false, error: "Choose or add the keeper." };
-  const parsed = parseListing(fd, sellerId);
+  const animalType = await findOrCreateCategory(str(fd, "animalType"));
+  const parsed = parseListing(fd, sellerId, animalType);
   if ("error" in parsed) return { ok: false, error: parsed.error };
   const updated = await updateListing(id, parsed);
   revalidateAll(updated?.slug);

@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AnimalsBrowser } from "@/components/AnimalsBrowser";
 import { getListings, getDistricts } from "@/lib/data/listings";
-import { CATEGORIES } from "@/lib/categories";
-import type { AnimalType } from "@/lib/types";
-import { ANIMAL_TYPES } from "@/lib/types";
+import { getCategoryMap } from "@/lib/data/categories";
 
 export const metadata: Metadata = {
   title: "Browse Animals for Sale in Rwanda",
@@ -19,19 +17,18 @@ export default async function AnimalsPage({
   searchParams: Promise<{ type?: string; search?: string }>;
 }) {
   const sp = await searchParams;
-  const type = ANIMAL_TYPES.includes(sp.type as AnimalType)
-    ? (sp.type as AnimalType)
-    : undefined;
 
   // Send ALL active listings to the browser; filtering happens client-side so
   // the controls and results can never disagree.
-  const [listings, districts] = await Promise.all([
+  const [listings, districts, catMap] = await Promise.all([
     getListings({}),
     getDistricts(),
+    getCategoryMap(),
   ]);
 
-  const heading = type
-    ? `${CATEGORIES[type].plural} for sale in Rwanda`
+  const cat = sp.type ? catMap[sp.type] : undefined;
+  const heading = cat
+    ? `${cat.plural} for sale in Rwanda`
     : sp.search
       ? `Results for “${sp.search}”`
       : "All animals for sale in Rwanda";

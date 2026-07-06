@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { SITE } from "@/lib/site";
-import { CATEGORY_LIST } from "@/lib/categories";
 import { getSettings } from "@/lib/data/settings";
+import { getCategories } from "@/lib/data/categories";
 import { MapPinIcon, WhatsAppIcon } from "./icons";
 
 export async function Footer() {
   const year = new Date().getFullYear();
-  const settings = await getSettings();
+  const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
   return (
     <footer className="mt-auto border-t border-forest-deep/20 bg-forest-dark text-cream/80">
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
@@ -29,7 +29,7 @@ export async function Footer() {
             Marketplace
           </p>
           <ul className="mt-4 space-y-2.5 text-sm">
-            {CATEGORY_LIST.map((c) => (
+            {categories.map((c) => (
               <li key={c.type}>
                 <Link
                   href={`/livestock/${c.type}`}

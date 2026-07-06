@@ -3,20 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import type { DictKey } from "@/lib/i18n/dictionary";
-import {
-  SearchIcon,
-  TagIcon,
-  HandshakeIcon,
-  MapPinIcon,
-} from "@/components/icons";
+import { SearchIcon, TagIcon, HandshakeIcon, MapPinIcon } from "@/components/icons";
 
 /**
- * Farmgate floating "dock" navigation — a 21st.dev-style glass dock with a
- * gold active-glow that springs between items. Primary nav on mobile (where the
- * top bar collapses); a quick-jump dock on desktop. Adapted from the LumaBar
- * pattern to the Forest/Gold brand and Farmgate routes.
+ * Farmgate premium "dock" — a floating glass bar with a sliding gold active
+ * pill (Apple-style). Shows on every screen size; auto-tucks away when the user
+ * reaches the footer so it never covers content.
  */
 interface Item {
   href: string;
@@ -37,8 +32,7 @@ function activeIndex(pathname: string): number {
   let best = 0;
   let bestLen = -1;
   items.forEach((item, i) => {
-    const hit =
-      item.match === "/" ? pathname === "/" : pathname.startsWith(item.match);
+    const hit = item.match === "/" ? pathname === "/" : pathname.startsWith(item.match);
     if (hit && item.match.length > bestLen) {
       best = i;
       bestLen = item.match.length;
@@ -52,29 +46,35 @@ export function DockNav() {
   const { t } = useI18n();
   const reduce = useReducedMotion();
   const active = activeIndex(pathname);
+  const [nearBottom, setNearBottom] = useState(false);
 
-  // Hide the dock inside the admin panel.
+  useEffect(() => {
+    const onScroll = () => {
+      const scrolled = window.innerHeight + window.scrollY;
+      setNearBottom(scrolled >= document.body.offsetHeight - 140);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
   if (pathname.startsWith("/admin")) return null;
 
   return (
-    <nav
-      aria-label="Quick navigation"
-      className="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-50 -translate-x-1/2 lg:hidden"
+    <div
+      className={`pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+0.9rem)] z-50 flex justify-center px-4 transition-[opacity,transform] duration-300 ${
+        nearBottom ? "translate-y-6 opacity-0" : "translate-y-0 opacity-100"
+      }`}
     >
-      <div className="relative flex items-center justify-center gap-1 overflow-hidden rounded-full border border-gold/30 bg-forest-dark/80 px-2 py-1.5 shadow-[0_10px_40px_rgba(18,45,34,0.45)] backdrop-blur-2xl">
-        <motion.div
-          aria-hidden
-          className="absolute -z-10 h-12 w-12 rounded-full bg-gradient-to-r from-gold to-gold-deep blur-2xl"
-          animate={{
-            left: `calc(${active * (100 / items.length)}% + ${100 / items.length / 2}%)`,
-            translateX: "-50%",
-          }}
-          transition={
-            reduce
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 500, damping: 30 }
-          }
-        />
+      <nav
+        aria-label="Quick navigation"
+        aria-hidden={nearBottom}
+        className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-forest-dark/85 p-1.5 shadow-[0_16px_44px_-10px_rgba(18,45,34,0.7)] ring-1 ring-black/5 backdrop-blur-xl"
+      >
         {items.map((item, i) => {
           const isActive = i === active;
           return (
@@ -83,24 +83,26 @@ export function DockNav() {
               href={item.href}
               aria-label={t(item.label)}
               aria-current={isActive ? "page" : undefined}
-              className="group relative flex flex-col items-center justify-center rounded-full px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              className="relative flex items-center gap-2 rounded-full px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-gold sm:px-4"
             >
-              <motion.span
-                whileHover={reduce ? undefined : { scale: 1.15 }}
-                whileTap={reduce ? undefined : { scale: 0.92 }}
-                animate={{ scale: isActive ? 1.18 : 1 }}
-                transition={{ type: "spring", stiffness: 500, damping: 28 }}
-                className={`relative z-10 flex h-8 w-8 items-center justify-center transition-colors [&_svg]:h-5 [&_svg]:w-5 ${
-                  isActive
-                    ? "text-gold drop-shadow-[0_0_8px_rgba(201,168,76,0.6)]"
-                    : "text-cream/70 group-hover:text-gold"
+              {isActive && (
+                <motion.span
+                  layoutId="dock-pill"
+                  aria-hidden
+                  className="absolute inset-0 -z-10 rounded-full bg-gradient-to-b from-gold to-gold-deep shadow-[0_2px_10px_rgba(201,168,76,0.5)]"
+                  transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 480, damping: 34 }}
+                />
+              )}
+              <span
+                className={`flex h-5 w-5 items-center justify-center transition-colors [&_svg]:h-5 [&_svg]:w-5 ${
+                  isActive ? "text-forest-dark" : "text-cream/70"
                 }`}
               >
                 {item.icon}
-              </motion.span>
+              </span>
               <span
-                className={`mt-0.5 text-[9px] font-medium leading-none tracking-wide transition-colors ${
-                  isActive ? "text-gold" : "text-cream/50 group-hover:text-cream/80"
+                className={`text-xs font-semibold leading-none tracking-tight transition-colors ${
+                  isActive ? "text-forest-dark" : "hidden text-cream/70 sm:inline"
                 }`}
               >
                 {t(item.label)}
@@ -108,23 +110,14 @@ export function DockNav() {
             </Link>
           );
         })}
-      </div>
-    </nav>
+      </nav>
+    </div>
   );
 }
 
 function HomeGlyph() {
   return (
-    <svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 10.5 12 3l9 7.5" />
       <path d="M5 9.5V21h14V9.5" />
       <path d="M9 21v-6h6v6" />

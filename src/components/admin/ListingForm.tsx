@@ -1,13 +1,12 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import type { PublicListing } from "@/lib/types";
 import { ANIMAL_TYPES } from "@/lib/types";
 import { CATEGORIES } from "@/lib/categories";
 import type { ActionResult } from "@/lib/actions/admin";
-import { uploadImage } from "@/lib/actions/upload";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 
 type Action = (
   prev: ActionResult | undefined,
@@ -31,30 +30,9 @@ export function ListingForm({
   listing?: PublicListing & { sellerId?: string };
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>(listing?.images ?? []);
-  const [urlInput, setUrlInput] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const error = state?.ok === false ? state.error : uploadError;
-
-  function addImage(url: string) {
-    const v = url.trim();
-    if (v && !images.includes(v)) setImages((prev) => [...prev, v]);
-  }
-
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await uploadImage(fd);
-    setUploading(false);
-    if (res.ok && res.url) addImage(res.url);
-    else setUploadError(res.error ?? "Upload failed.");
-  }
+  const [newKeeper, setNewKeeper] = useState(sellers.length === 0);
+  const error = state?.ok === false ? state.error : null;
 
   const sellerId =
     listing?.sellerId ?? listing?.seller?.id ?? sellers[0]?.id ?? "";
@@ -75,12 +53,40 @@ export function ListingForm({
             ))}
           </select>
         </Field>
-        <Field label="Keeper">
-          <select name="sellerId" defaultValue={sellerId} className={input}>
-            {sellers.map((s) => (
-              <option key={s.id} value={s.id}>{s.displayName}</option>
-            ))}
-          </select>
+        <Field label="Keeper (animal owner)" full>
+          {!newKeeper ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <select name="sellerId" defaultValue={sellerId} className={`${input} flex-1`}>
+                {sellers.map((s) => (
+                  <option key={s.id} value={s.id}>{s.displayName}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setNewKeeper(true)}
+                className="inline-flex h-11 shrink-0 items-center rounded-[var(--radius)] border border-forest/30 bg-white px-4 text-sm font-semibold text-forest-deep transition-colors hover:border-forest cursor-pointer"
+              >
+                + New keeper
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-[var(--radius)] border border-forest/20 bg-leaf-tint/25 p-3">
+              <div className="grid gap-2 sm:grid-cols-3">
+                <input name="newKeeperName" required placeholder="Keeper name *" className={input} />
+                <input name="newKeeperPhone" placeholder="WhatsApp / phone" className={input} />
+                <input name="newKeeperDistrict" placeholder="District" className={input} />
+              </div>
+              {sellers.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setNewKeeper(false)}
+                  className="mt-2 text-sm font-medium text-forest-deep hover:underline cursor-pointer"
+                >
+                  ← Choose an existing keeper instead
+                </button>
+              )}
+            </div>
+          )}
         </Field>
         <Field label="Breed">
           <input name="breed" defaultValue={listing?.breed} placeholder="e.g. Friesian (Holstein)" className={input} />
@@ -125,59 +131,9 @@ export function ListingForm({
         <input name="healthNotes" defaultValue={listing?.healthNotes ?? ""} placeholder="e.g. Vaccinated, dewormed, vet-checked." className={input} />
       </Field>
 
-      <Field label="Photos" full hint="Upload from your device, or add an image URL / bundled path like /animals/cattle-1.jpg">
+      <Field label="Photos" full>
         <input type="hidden" name="images" value={images.join("\n")} />
-
-        {images.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-3">
-            {images.map((src) => (
-              <div
-                key={src}
-                className="relative h-20 w-20 overflow-hidden rounded-[var(--radius)] border border-line"
-              >
-                <Image src={src} alt="" fill sizes="80px" className="object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setImages((p) => p.filter((x) => x !== src))}
-                  aria-label="Remove photo"
-                  className="absolute right-0 top-0 grid h-5 w-5 place-items-center bg-forest-dark/80 text-xs text-white hover:bg-danger cursor-pointer"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="inline-flex h-10 cursor-pointer items-center rounded-[var(--radius)] border border-forest/30 bg-white px-4 text-sm font-semibold text-forest-deep transition-colors hover:border-forest">
-            {uploading ? "Uploading…" : "Upload photo"}
-            <input type="file" accept="image/*" onChange={onFile} disabled={uploading} className="hidden" />
-          </label>
-          <input
-            value={urlInput}
-            onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="…or paste image URL / path"
-            className={`${input} max-w-xs flex-1`}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addImage(urlInput);
-                setUrlInput("");
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              addImage(urlInput);
-              setUrlInput("");
-            }}
-            className="inline-flex h-10 items-center rounded-[var(--radius)] border border-line px-4 text-sm font-semibold text-ink-soft transition-colors hover:border-forest/30 cursor-pointer"
-          >
-            Add
-          </button>
-        </div>
+        <ImageUploader bucket="fg-listings" value={images} onChange={setImages} />
       </Field>
 
       <div className="flex flex-wrap gap-6">

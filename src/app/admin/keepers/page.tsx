@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { listSellers, listApplications } from "@/lib/data/admin-repo";
+import { listSellersFull, listApplications } from "@/lib/data/admin-repo";
 import {
   createSellerAction,
+  updateSellerAction,
   verifySellerAction,
   deleteSellerAction,
   deleteApplicationAction,
 } from "@/lib/actions/admin";
 import { DeleteButton, MiniForm } from "@/components/admin/controls";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
-import { formatMemberSince } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Keepers",
@@ -24,7 +24,7 @@ const inp =
 export default async function AdminKeepers() {
   if (!(await isAdmin())) redirect("/admin/login");
   const [sellers, applications] = await Promise.all([
-    listSellers(),
+    listSellersFull(),
     listApplications(),
   ]);
 
@@ -106,59 +106,80 @@ export default async function AdminKeepers() {
         )}
       </section>
 
-      {/* Existing keepers */}
+      {/* Existing keepers — fully editable */}
       <section className="mb-10">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-ink">
-            Keepers ({sellers.length})
-          </h2>
-        </div>
-        <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-line bg-surface shadow-[var(--shadow-sm)]">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-muted">
-                <th className="px-4 py-3 font-semibold">Keeper</th>
-                <th className="px-4 py-3 font-semibold">Location</th>
-                <th className="px-4 py-3 font-semibold">Member since</th>
-                <th className="px-4 py-3 font-semibold">Verified</th>
-                <th className="px-4 py-3 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sellers.map((s) => (
-                <tr key={s.id} className="border-b border-line last:border-0">
-                  <td className="px-4 py-3 font-medium text-ink">
+        <h2 className="mb-3 font-display text-lg font-bold text-ink">
+          Keepers ({sellers.length})
+        </h2>
+        {sellers.length === 0 ? (
+          <p className="rounded-[var(--radius-lg)] border border-dashed border-line bg-surface p-8 text-center text-sm text-ink-muted">
+            No keepers yet. Add one below or on a listing.
+          </p>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {sellers.map((s) => (
+              <div
+                key={s.id}
+                className="rounded-[var(--radius-lg)] border border-line bg-surface p-5 shadow-[var(--shadow-sm)]"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="flex items-center gap-2 font-display font-bold text-ink">
                     {s.displayName}
-                  </td>
-                  <td className="px-4 py-3 text-ink-soft">
-                    {s.sector}, {s.district}
-                  </td>
-                  <td className="px-4 py-3 text-ink-soft">
-                    {formatMemberSince(s.memberSince)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {s.verified ? <VerifiedBadge /> : <span className="text-xs text-ink-muted">No</span>}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <MiniForm
-                        action={verifySellerAction}
-                        fields={{ id: s.id, verified: String(!s.verified) }}
-                        label={s.verified ? "Unverify" : "Verify"}
-                        tone={s.verified ? "neutral" : "gold"}
-                      />
-                      <DeleteButton
-                        action={deleteSellerAction}
-                        id={s.id}
-                        confirm={`Delete ${s.displayName} and all their listings?`}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    {s.verified && <VerifiedBadge />}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <MiniForm
+                      action={verifySellerAction}
+                      fields={{ id: s.id, verified: String(!s.verified) }}
+                      label={s.verified ? "Unverify" : "Verify"}
+                      tone={s.verified ? "neutral" : "gold"}
+                    />
+                    <DeleteButton
+                      action={deleteSellerAction}
+                      id={s.id}
+                      confirm={`Delete ${s.displayName} and all their listings?`}
+                    />
+                  </div>
+                </div>
+                <form action={updateSellerAction} className="space-y-2">
+                  <input type="hidden" name="id" value={s.id} />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Labeled label="Public name">
+                      <input name="displayName" required defaultValue={s.displayName} className={inp} />
+                    </Labeled>
+                    <Labeled label="Full name (private)">
+                      <input name="fullName" defaultValue={s.fullName} className={inp} />
+                    </Labeled>
+                    <Labeled label="Phone (private)">
+                      <input name="phone" defaultValue={s.phone} className={inp} />
+                    </Labeled>
+                    <Labeled label="WhatsApp (private)">
+                      <input name="whatsapp" defaultValue={s.whatsapp} className={inp} />
+                    </Labeled>
+                    <Labeled label="District">
+                      <input name="district" defaultValue={s.district} className={inp} />
+                    </Labeled>
+                    <Labeled label="Sector">
+                      <input name="sector" defaultValue={s.sector} className={inp} />
+                    </Labeled>
+                    <Labeled label="Email (optional)" full>
+                      <input name="email" defaultValue={s.email ?? ""} className={inp} />
+                    </Labeled>
+                    <Labeled label="Bio" full>
+                      <textarea name="bio" rows={2} defaultValue={s.bio} className={`${inp} resize-none`} />
+                    </Labeled>
+                  </div>
+                  <button
+                    type="submit"
+                    className="mt-1 inline-flex h-9 items-center rounded-[var(--radius)] bg-forest px-4 text-sm font-semibold text-white transition-colors hover:bg-forest-deep cursor-pointer"
+                  >
+                    Save changes
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Add keeper manually */}

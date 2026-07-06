@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.supabase.in" },
     ],
   },
+  // Photos upload directly to storage (not through actions), but keep a safe
+  // headroom for text-heavy form submits.
+  experimental: {
+    serverActions: { bodySizeLimit: "2mb" },
+  },
 };
 
 export default nextConfig;

@@ -1,9 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import Image from "next/image";
 import { updateSettingsAction } from "@/lib/actions/settings";
-import { uploadImage } from "@/lib/actions/upload";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import type { SiteSettings } from "@/lib/settings-types";
 
 const input =
@@ -12,50 +11,18 @@ const input =
 export function SettingsForm({ settings }: { settings: SiteSettings }) {
   const [state, formAction, pending] = useActionState(updateSettingsAction, undefined);
   const [logoUrl, setLogoUrl] = useState<string>(settings.logoUrl ?? "");
-  const [uploading, setUploading] = useState(false);
-  const [uploadErr, setUploadErr] = useState<string | null>(null);
-
-  async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setUploading(true);
-    setUploadErr(null);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("bucket", "fg-brand");
-    const res = await uploadImage(fd);
-    setUploading(false);
-    if (res.ok && res.url) setLogoUrl(res.url);
-    else setUploadErr(res.error ?? "Upload failed.");
-  }
 
   return (
     <form action={formAction} className="max-w-2xl space-y-8">
       {/* Logo */}
       <Section title="Logo & branding">
         <input type="hidden" name="logoUrl" value={logoUrl} />
-        <div className="flex items-center gap-4">
-          <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-[var(--radius)] border border-line bg-cream">
-            {logoUrl ? (
-              <Image src={logoUrl} alt="Logo" width={64} height={64} className="h-16 w-16 object-contain" />
-            ) : (
-              <span className="text-xs text-ink-muted">No logo</span>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="inline-flex h-10 cursor-pointer items-center rounded-[var(--radius)] border border-forest/30 bg-white px-4 text-sm font-semibold text-forest-deep hover:border-forest">
-              {uploading ? "Uploading…" : "Upload logo"}
-              <input type="file" accept="image/*" onChange={onLogo} disabled={uploading} className="hidden" />
-            </label>
-            {logoUrl && (
-              <button type="button" onClick={() => setLogoUrl("")} className="text-xs font-semibold text-danger hover:underline cursor-pointer">
-                Remove
-              </button>
-            )}
-          </div>
-        </div>
-        {uploadErr && <p className="mt-2 text-sm text-danger">{uploadErr}</p>}
+        <ImageUploader
+          bucket="fg-brand"
+          single
+          value={logoUrl ? [logoUrl] : []}
+          onChange={(urls) => setLogoUrl(urls[0] ?? "")}
+        />
       </Section>
 
       {/* Hero */}

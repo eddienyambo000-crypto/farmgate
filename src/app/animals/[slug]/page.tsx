@@ -11,6 +11,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { formatRwf, formatDate, formatMemberSince } from "@/lib/format";
 import { SITE } from "@/lib/site";
 import { InquiryForm } from "@/components/InquiryForm";
+import { ViewPing } from "@/components/ViewPing";
 import { ListingCard } from "@/components/ListingCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import {
@@ -110,6 +111,7 @@ export default async function ListingPage({
 
   return (
     <article className="bg-grain">
+      <ViewPing listingId={listing.id} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

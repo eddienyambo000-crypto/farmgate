@@ -11,6 +11,8 @@ import {
   setListingFeatured,
   getListingById,
   createSeller,
+  findOrCreateSeller,
+  updateSeller,
   setSellerVerified,
   deleteSeller,
   setInquiryStatus,
@@ -47,16 +49,44 @@ function str(fd: FormData, key: string): string {
   return String(fd.get(key) ?? "").trim();
 }
 
-function parseListing(fd: FormData): ListingInput | { error: string } {
+function publicName(full: string): string {
+  const parts = full.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+}
+
+/**
+ * Resolve the keeper for a listing: an existing keeper (sellerId) OR a brand-new
+ * one typed inline on the form (newKeeperName). Returns the keeper id or null.
+ */
+async function resolveSellerId(fd: FormData): Promise<string | null> {
+  const newName = str(fd, "newKeeperName");
+  if (newName.length >= 2) {
+    const phone = str(fd, "newKeeperPhone");
+    return findOrCreateSeller({
+      displayName: publicName(newName),
+      fullName: newName,
+      phone: phone || "—",
+      whatsapp: phone,
+      email: null,
+      district: str(fd, "newKeeperDistrict") || str(fd, "district") || "Rwanda",
+      sector: str(fd, "sector"),
+      bio: "",
+      verified: true,
+    });
+  }
+  return str(fd, "sellerId") || null;
+}
+
+function parseListing(fd: FormData, sellerId: string): ListingInput | { error: string } {
   const title = str(fd, "title");
   const animalType = str(fd, "animalType") as AnimalType;
-  const sellerId = str(fd, "sellerId");
   const priceRwf = Number(str(fd, "priceRwf"));
 
   if (title.length < 2) return { error: "Title is required." };
   if (!ANIMAL_TYPES.includes(animalType))
     return { error: "Pick a valid animal type." };
-  if (!sellerId) return { error: "Choose the keeper this animal belongs to." };
+  if (!sellerId) return { error: "Choose or add the keeper this animal belongs to." };
   if (!Number.isFinite(priceRwf) || priceRwf < 0)
     return { error: "Enter a valid price." };
 
@@ -96,7 +126,9 @@ export async function createListingAction(
   fd: FormData,
 ): Promise<ActionResult> {
   await guard();
-  const parsed = parseListing(fd);
+  const sellerId = await resolveSellerId(fd);
+  if (!sellerId) return { ok: false, error: "Choose or add the keeper." };
+  const parsed = parseListing(fd, sellerId);
   if ("error" in parsed) return { ok: false, error: parsed.error };
   const created = await createListing(parsed);
   revalidateAll(created?.slug);
@@ -109,7 +141,9 @@ export async function updateListingAction(
   fd: FormData,
 ): Promise<ActionResult> {
   await guard();
-  const parsed = parseListing(fd);
+  const sellerId = await resolveSellerId(fd);
+  if (!sellerId) return { ok: false, error: "Choose or add the keeper." };
+  const parsed = parseListing(fd, sellerId);
   if ("error" in parsed) return { ok: false, error: parsed.error };
   const updated = await updateListing(id, parsed);
   revalidateAll(updated?.slug);
@@ -166,6 +200,25 @@ export async function createSellerAction(fd: FormData): Promise<void> {
   if (appId) await deleteApplication(appId);
   revalidateAll();
   redirect("/admin/keepers");
+}
+
+export async function updateSellerAction(fd: FormData): Promise<void> {
+  await guard();
+  const id = str(fd, "id");
+  const displayName = str(fd, "displayName");
+  if (!id || displayName.length < 2) return;
+  await updateSeller(id, {
+    displayName,
+    fullName: str(fd, "fullName") || displayName,
+    phone: str(fd, "phone"),
+    whatsapp: str(fd, "whatsapp"),
+    email: str(fd, "email") || null,
+    district: str(fd, "district"),
+    sector: str(fd, "sector"),
+    bio: str(fd, "bio"),
+  });
+  revalidateAll();
+  revalidatePath("/admin/keepers");
 }
 
 export async function verifySellerAction(fd: FormData): Promise<void> {

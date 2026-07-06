@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { addApplication } from "@/lib/data/admin-repo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
+import { notifyOwner } from "@/lib/notify";
 import { ANIMAL_TYPES } from "@/lib/types";
 
 export interface SellerInput {
@@ -69,6 +70,16 @@ export async function submitSellerApplication(
       createdAt: new Date().toISOString(),
     });
   }
+
+  await notifyOwner({
+    type: "application",
+    fullName,
+    phone,
+    district,
+    animalType: input.animalType,
+    animalCount,
+    details,
+  });
 
   return { ok: true };
 }

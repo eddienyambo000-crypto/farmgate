@@ -337,6 +337,119 @@ export async function createSeller(input: SellerInput): Promise<PublicSeller | n
   return seller;
 }
 
+export interface SellerFull {
+  id: string;
+  displayName: string;
+  fullName: string;
+  phone: string;
+  whatsapp: string;
+  email: string | null;
+  district: string;
+  sector: string;
+  bio: string;
+  verified: boolean;
+}
+
+export async function listSellersFull(): Promise<SellerFull[]> {
+  if (sb()) {
+    const { data } = await admin()
+      .from("fg_sellers")
+      .select("*")
+      .order("created_at", { ascending: false });
+    return (data ?? []).map((r) => ({
+      id: String(r.id),
+      displayName: String(r.display_name ?? ""),
+      fullName: String(r.full_name ?? ""),
+      phone: String(r.phone ?? ""),
+      whatsapp: String(r.whatsapp ?? ""),
+      email: (r.email as string) ?? null,
+      district: String(r.district ?? ""),
+      sector: String(r.sector ?? ""),
+      bio: String(r.bio ?? ""),
+      verified: Boolean(r.verified),
+    }));
+  }
+  return Array.from(db().sellers.values()).map((s) => {
+    const c = db().contacts.get(s.id);
+    return {
+      id: s.id,
+      displayName: s.displayName,
+      fullName: c?.fullName ?? s.displayName,
+      phone: c?.phone ?? "",
+      whatsapp: c?.whatsapp ?? "",
+      email: c?.email ?? null,
+      district: s.district,
+      sector: s.sector,
+      bio: s.bio,
+      verified: s.verified,
+    };
+  });
+}
+
+export interface SellerUpdate {
+  displayName: string;
+  fullName: string;
+  phone: string;
+  whatsapp: string;
+  email: string | null;
+  district: string;
+  sector: string;
+  bio: string;
+}
+
+export async function updateSeller(id: string, input: SellerUpdate): Promise<boolean> {
+  if (sb()) {
+    const { error } = await admin()
+      .from("fg_sellers")
+      .update({
+        display_name: input.displayName,
+        full_name: input.fullName,
+        phone: input.phone,
+        whatsapp: input.whatsapp || input.phone,
+        email: input.email,
+        district: input.district,
+        sector: input.sector,
+        bio: input.bio,
+      })
+      .eq("id", id);
+    return !error;
+  }
+  const s = db().sellers.get(id);
+  if (!s) return false;
+  s.displayName = input.displayName;
+  s.district = input.district;
+  s.sector = input.sector;
+  s.bio = input.bio;
+  db().contacts.set(id, {
+    sellerId: id,
+    fullName: input.fullName,
+    phone: input.phone,
+    whatsapp: input.whatsapp || input.phone,
+    email: input.email,
+  });
+  return true;
+}
+
+/** Find an existing keeper by (case-insensitive) display name, else create one. */
+export async function findOrCreateSeller(input: SellerInput): Promise<string | null> {
+  if (sb()) {
+    const { data } = await admin()
+      .from("fg_sellers")
+      .select("id")
+      .ilike("display_name", input.displayName)
+      .maybeSingle();
+    if (data?.id) return String(data.id);
+    const created = await createSeller(input);
+    return created?.id ?? null;
+  }
+  const existing = Array.from(db().sellers.values()).find(
+    (s) => s.displayName.toLowerCase() === input.displayName.toLowerCase(),
+  );
+  if (existing) return existing.id;
+  const created = await createSeller(input);
+  return created?.id ?? null;
+}
+
 export async function setSellerVerified(id: string, verified: boolean): Promise<boolean> {
   if (sb()) {
     const { error } = await admin().from("fg_sellers").update({ verified }).eq("id", id);

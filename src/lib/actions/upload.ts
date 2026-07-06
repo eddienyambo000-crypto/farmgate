@@ -13,6 +13,42 @@ export interface UploadResult {
 
 const BUCKETS = new Set(["fg-listings", "fg-brand"]);
 
+export interface SignedUpload {
+  ok: boolean;
+  path?: string;
+  signedUrl?: string;
+  publicUrl?: string;
+  error?: string;
+}
+
+/**
+ * Returns a short-lived signed URL so the browser uploads the (already
+ * compressed) photo DIRECTLY to Supabase Storage — bypassing the Next Server
+ * Action 1 MB body limit and the extra network hop. Admin-guarded; the signed
+ * URL itself is pre-authorized so no storage RLS is needed on the client.
+ */
+export async function createUploadUrl(
+  bucketReq: string,
+  ext: string,
+): Promise<SignedUpload> {
+  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  if (!isSupabaseConfigured())
+    return { ok: false, error: "Storage not configured." };
+
+  const bucket = BUCKETS.has(bucketReq) ? bucketReq : "fg-listings";
+  const safeExt = /^[a-z0-9]{2,5}$/i.test(ext) ? ext.toLowerCase() : "jpg";
+  const path = `${new Date().getFullYear()}/${randomUUID()}.${safeExt}`;
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUploadUrl(path);
+  if (error || !data) return { ok: false, error: error?.message ?? "Upload failed." };
+
+  const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
+  return { ok: true, path, signedUrl: data.signedUrl, publicUrl: pub.publicUrl };
+}
+
 /**
  * Uploads an animal photo. With Supabase configured it stores the file in the
  * public `listings` Storage bucket (via the service role) and returns its public

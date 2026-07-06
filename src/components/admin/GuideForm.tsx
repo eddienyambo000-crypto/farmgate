@@ -1,9 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { uploadImage } from "@/lib/actions/upload";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import type { ContentResult } from "@/lib/actions/content";
 import type { GuideRow } from "@/lib/data/admin-repo";
 
@@ -24,20 +23,6 @@ export function GuideForm({
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [cover, setCover] = useState(guide?.coverImage ?? "");
-  const [uploading, setUploading] = useState(false);
-
-  async function onCover(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("bucket", "fg-listings");
-    const res = await uploadImage(fd);
-    setUploading(false);
-    if (res.ok && res.url) setCover(res.url);
-  }
 
   return (
     <form
@@ -55,26 +40,12 @@ export function GuideForm({
       </Field>
 
       <Field label="Cover image">
-        <div className="flex items-center gap-4">
-          {cover ? (
-            <div className="relative h-16 w-24 overflow-hidden rounded-[var(--radius)] border border-line">
-              <Image src={cover} alt="" fill sizes="96px" className="object-cover" />
-            </div>
-          ) : (
-            <div className="grid h-16 w-24 place-items-center rounded-[var(--radius)] border border-dashed border-line text-xs text-ink-muted">
-              None
-            </div>
-          )}
-          <label className="inline-flex h-10 cursor-pointer items-center rounded-[var(--radius)] border border-forest/30 bg-white px-4 text-sm font-semibold text-forest-deep hover:border-forest">
-            {uploading ? "Uploading…" : "Upload"}
-            <input type="file" accept="image/*" onChange={onCover} disabled={uploading} className="hidden" />
-          </label>
-          {cover && (
-            <button type="button" onClick={() => setCover("")} className="text-xs font-semibold text-danger hover:underline cursor-pointer">
-              Remove
-            </button>
-          )}
-        </div>
+        <ImageUploader
+          bucket="fg-listings"
+          single
+          value={cover ? [cover] : []}
+          onChange={(urls) => setCover(urls[0] ?? "")}
+        />
       </Field>
 
       <Field label="Body (Markdown — use ## for headings, - for lists, [text](/link) for links)">

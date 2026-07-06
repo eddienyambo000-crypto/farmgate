@@ -124,9 +124,15 @@ export async function Footer() {
 
       <div className="border-t border-cream/10">
         <div className="container-page flex flex-col items-center justify-between gap-3 py-6 text-xs text-cream/55 sm:flex-row">
-          <p>
-            © {year} {SITE.legalName}. All rights reserved.
-          </p>
+          <p>© {year} {SITE.legalName}. All rights reserved.</p>
+          <a
+            href="https://eddie-portfolio-gamma.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-gold"
+          >
+            Built by <span className="font-semibold text-cream/80">Eddie Nyambo</span>
+          </a>
           <div className="flex items-center gap-5">
             <Link href="/privacy" className="hover:text-cream">
               Privacy

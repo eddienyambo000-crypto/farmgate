@@ -5,6 +5,8 @@ import { getListingBySlug } from "@/lib/data/listings";
 import { addInquiry } from "@/lib/data/admin-repo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
+import { notifyOwner } from "@/lib/notify";
+import { SITE } from "@/lib/site";
 import type { InquiryInput } from "@/lib/types";
 
 export interface InquiryResult {
@@ -74,6 +76,16 @@ export async function submitInquiry(
       createdAt: new Date().toISOString(),
     });
   }
+
+  await notifyOwner({
+    type: "lead",
+    buyerName: name,
+    buyerPhone: phone,
+    buyerDistrict: district,
+    message,
+    animal: listing.title,
+    animalUrl: `${SITE.url}/animals/${listing.slug}`,
+  });
 
   return { ok: true };
 }

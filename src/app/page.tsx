@@ -48,7 +48,7 @@ export default async function HomePage() {
             <Reveal>
               <span className="inline-flex items-center gap-2 rounded-full border border-forest/15 bg-white/70 px-3.5 py-1.5 text-sm font-medium text-forest-deep backdrop-blur-sm">
                 <ShieldCheckIcon className="h-4 w-4 text-gold-deep" />
-                Rwanda&apos;s first online livestock marketplace
+                Rwanda&apos;s marketplace to buy &amp; sell livestock
               </span>
             </Reveal>
             <Reveal delay={0.08}>
@@ -84,6 +84,15 @@ export default async function HomePage() {
                 <span className="inline-flex items-center gap-1.5">
                   <CheckIcon className="h-4 w-4 text-forest" /> Nationwide delivery
                 </span>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <ButtonLink href="/animals" size="lg">
+                  Browse animals to buy
+                  <ArrowRightIcon className="h-5 w-5" />
+                </ButtonLink>
+                <ButtonLink href="/sell" variant="outline" size="lg">
+                  Sell your animals
+                </ButtonLink>
               </div>
             </Reveal>
           </div>

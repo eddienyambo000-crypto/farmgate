@@ -137,6 +137,12 @@
   }
 }
 
+/* Chat assistant typing dots */
+@keyframes fgblink {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
 /* Markdown / long-form content (guides) */
 .prose-fg {
   color: var(--color-ink-soft);

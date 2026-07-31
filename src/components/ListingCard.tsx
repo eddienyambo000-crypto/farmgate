@@ -7,7 +7,11 @@ import { MapPinIcon, SyringeIcon } from "./icons";
 import { VerifiedBadge } from "./VerifiedBadge";
 
 export function ListingCard({ listing }: { listing: PublicListing }) {
-  const cat = CATEGORIES[listing.animalType];
+  // Fall back to a title-cased label so a listing whose category was renamed or
+  // removed still renders its badge instead of crashing on an undefined lookup.
+  const cat = CATEGORIES[listing.animalType] ?? {
+    label: listing.animalType.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+  };
   const sold = listing.status === "sold";
 
   return (

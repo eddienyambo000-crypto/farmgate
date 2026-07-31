@@ -8,6 +8,7 @@ import {
   getRelatedListings,
 } from "@/lib/data/listings";
 import { CATEGORIES } from "@/lib/categories";
+import { getCategoryMap } from "@/lib/data/categories";
 import { formatRwf, formatDate, formatMemberSince } from "@/lib/format";
 import { SITE } from "@/lib/site";
 import { InquiryForm } from "@/components/InquiryForm";
@@ -64,7 +65,21 @@ export default async function ListingPage({
   const listing = await getListingBySlug(slug);
   if (!listing) notFound();
 
-  const cat = CATEGORIES[listing.animalType];
+  // Resolve the category from the dynamic map, with safe fallbacks so a listing
+  // whose category was renamed or deleted still renders (never crash on .label).
+  const catMap = await getCategoryMap();
+  const titleCased = listing.animalType
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const cat = catMap[listing.animalType] ??
+    CATEGORIES[listing.animalType] ?? {
+      type: listing.animalType,
+      label: titleCased,
+      labelRw: "",
+      plural: titleCased,
+      blurb: "",
+      synonyms: "",
+    };
   const related = await getRelatedListings(listing, 3);
 
   const specs = [

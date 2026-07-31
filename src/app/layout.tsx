@@ -11,7 +11,7 @@ import { CategoriesProvider } from "@/lib/categories-context";
 import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { WhatsAppFab } from "@/components/WhatsAppFab";
+import { ChatWidget } from "@/components/ChatWidget";
 import { DockNav } from "@/components/DockNav";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
@@ -90,7 +90,7 @@ export default async function RootLayout({
             <Navbar />
             <main className="flex-1 pb-20 lg:pb-0">{children}</main>
             <Footer />
-            <WhatsAppFab />
+            <ChatWidget />
             <DockNav />
           </LanguageProvider>
           </CategoriesProvider>

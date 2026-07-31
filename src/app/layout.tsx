@@ -12,6 +12,7 @@ import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ChatWidget } from "@/components/ChatWidget";
+import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { DockNav } from "@/components/DockNav";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
@@ -91,6 +92,7 @@ export default async function RootLayout({
             <main className="flex-1 pb-20 lg:pb-0">{children}</main>
             <Footer />
             <ChatWidget />
+            <WhatsAppFab />
             <DockNav />
           </LanguageProvider>
           </CategoriesProvider>

@@ -16,6 +16,7 @@ import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { DockNav } from "@/components/DockNav";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
+import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -99,6 +100,7 @@ export default async function RootLayout({
         </SettingsProvider>
         <Analytics />
         <SpeedInsights />
+        <GoogleAnalytics />
       </body>
     </html>
   );

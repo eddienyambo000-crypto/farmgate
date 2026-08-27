@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { submitInquiry } from "@/lib/actions/inquiry";
+import { AntiSpamFields, readSpamSignals } from "./AntiSpamFields";
 import { LockIcon, CheckIcon, ShieldCheckIcon } from "./icons";
 
 const DISTRICTS = [
@@ -32,6 +33,7 @@ export function InquiryForm({
       buyerPhone: String(formData.get("phone") ?? ""),
       buyerDistrict: String(formData.get("district") ?? ""),
       message: String(formData.get("message") ?? ""),
+      ...readSpamSignals(formData),
     });
     setPending(false);
     if (res.ok) setDone(true);
@@ -58,6 +60,7 @@ export function InquiryForm({
 
   return (
     <form action={action} className="space-y-4">
+      <AntiSpamFields />
       <div className="flex items-start gap-2 rounded-[var(--radius)] bg-leaf-tint/40 p-3 text-sm text-forest-deep">
         <ShieldCheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-gold-deep" />
         <p>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { submitSellerApplication } from "@/lib/actions/seller";
 import { useCategories } from "@/lib/categories-context";
+import { AntiSpamFields, readSpamSignals } from "./AntiSpamFields";
 import { CheckIcon } from "./icons";
 
 const DISTRICTS = [
@@ -32,6 +33,7 @@ export function SellForm() {
       animalType: String(formData.get("animalType") ?? ""),
       animalCount: String(formData.get("animalCount") ?? ""),
       details: String(formData.get("details") ?? ""),
+      ...readSpamSignals(formData),
     });
     setPending(false);
     if (res.ok) setDone(true);
@@ -57,6 +59,7 @@ export function SellForm() {
 
   return (
     <form action={action} className="space-y-4">
+      <AntiSpamFields />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Full name" htmlFor="fullName">
           <input id="fullName" name="fullName" required autoComplete="name" placeholder="e.g. Ferdinand N." className={inputCls} />

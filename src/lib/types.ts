@@ -106,4 +106,6 @@ export interface InquiryInput {
   buyerPhone: string;
   buyerDistrict: string;
   message: string;
+  honeypot?: string;
+  elapsedMs?: number;
 }

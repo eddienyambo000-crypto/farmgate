@@ -5,6 +5,7 @@ import { addApplication } from "@/lib/data/admin-repo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { notifyOwner } from "@/lib/notify";
+import { isSpam } from "@/lib/anti-spam";
 
 export interface SellerInput {
   fullName: string;
@@ -13,6 +14,8 @@ export interface SellerInput {
   animalType: string;
   animalCount: string;
   details: string;
+  honeypot?: string;
+  elapsedMs?: number;
 }
 
 export interface SellerResult {
@@ -31,6 +34,11 @@ function normalizePhone(raw: string): string | null {
 export async function submitSellerApplication(
   input: SellerInput,
 ): Promise<SellerResult> {
+  // Silently drop bots — return ok so they don't retry; no row saved.
+  if (isSpam({ honeypot: input.honeypot, elapsedMs: input.elapsedMs })) {
+    return { ok: true };
+  }
+
   const fullName = input.fullName?.trim() ?? "";
   const district = input.district?.trim() ?? "";
   const details = input.details?.trim() ?? "";

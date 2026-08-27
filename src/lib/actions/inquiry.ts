@@ -6,6 +6,7 @@ import { addInquiry } from "@/lib/data/admin-repo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { notifyOwner } from "@/lib/notify";
+import { isSpam } from "@/lib/anti-spam";
 import { SITE } from "@/lib/site";
 import type { InquiryInput } from "@/lib/types";
 
@@ -26,6 +27,12 @@ function normalizePhone(raw: string): string | null {
 export async function submitInquiry(
   input: InquiryInput,
 ): Promise<InquiryResult> {
+  // Silently drop bots (honeypot filled or submitted implausibly fast). We
+  // return ok so the bot believes it succeeded and doesn't retry — no row saved.
+  if (isSpam({ honeypot: input.honeypot, elapsedMs: input.elapsedMs })) {
+    return { ok: true };
+  }
+
   // Server-side validation — never trust the client.
   const name = input.buyerName?.trim() ?? "";
   const district = input.buyerDistrict?.trim() ?? "";

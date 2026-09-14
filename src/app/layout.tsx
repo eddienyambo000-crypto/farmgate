@@ -12,6 +12,7 @@ import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ChatWidget } from "@/components/ChatWidget";
+import { FaraChat } from "@/components/FaraChat";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { DockNav } from "@/components/DockNav";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
@@ -92,7 +93,7 @@ export default async function RootLayout({
             <Navbar />
             <main className="flex-1 pb-20 lg:pb-0">{children}</main>
             <Footer />
-            <ChatWidget />
+            {process.env.NEXT_PUBLIC_FARA_AI_URL ? <FaraChat /> : <ChatWidget />}
             <WhatsAppFab />
             <DockNav />
           </LanguageProvider>
